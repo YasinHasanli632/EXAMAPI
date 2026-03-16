@@ -1,0 +1,75 @@
+﻿############################
+# Build
+############################
+bin/
+obj/
+out/
+publish/
+
+############################
+# Visual Studio
+############################
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+############################
+# Rider / VSCode
+############################
+.idea/
+.vscode/
+
+############################
+# Logs
+############################
+*.log
+logs/
+
+############################
+# OS files
+############################
+.DS_Store
+Thumbs.db
+
+############################
+# Test results
+############################
+TestResults/
+*.trx
+
+############################
+# NuGet
+############################
+*.nupkg
+*.snupkg
+.nuget/
+
+############################
+# EF Core migrations (əgər repo-da saxlamaq istəmirsənsə)
+# Adətən saxlanılır — istəsən bu sətri sil
+# Migrations/
+
+############################
+# Secrets / Local settings
+############################
+appsettings.Development.json
+appsettings.Local.json
+secrets.json
+
+############################
+# Angular / Node (əgər front bu repo-dadırsa)
+############################
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-error.log*
+
+############################
+# Coverage
+############################
+coverage/
+*.coverage
+*.coveragexml
