@@ -6,42 +6,27 @@ using System.Threading.Tasks;
 
 namespace ExamApplication.DTO.User
 {
-    /// <summary>
-    /// Admin paneldən yeni user yaratmaq üçün istifadə olunan request modelidir.
-    /// Bu model əsas account məlumatlarını daşıyır.
-    /// </summary>
     public class CreateUserRequestDto
     {
-        /// <summary>
-        /// İstifadəçinin username-i.
-        /// Sistemdə unikal olmalıdır.
-        /// </summary>
         public string Username { get; set; } = string.Empty;
-
-        /// <summary>
-        /// İstifadəçinin email ünvanı.
-        /// Sistemdə unikal olmalıdır.
-        /// </summary>
         public string Email { get; set; } = string.Empty;
-
-        /// <summary>
-        /// İstifadəçi üçün təyin ediləcək şifrə.
-        /// Servis daxilində hash olunaraq saxlanılmalıdır.
-        /// </summary>
         public string Password { get; set; } = string.Empty;
-
-        /// <summary>
-        /// İstifadəçinin rolu.
-        /// Məsələn: Admin, Teacher, Student.
-        /// </summary>
         public string Role { get; set; } = string.Empty;
-
-        
-
-        /// <summary>
-        /// User yaradılan anda aktiv olsun ya yox.
-        /// Default olaraq true verilə bilər.
-        /// </summary>
         public bool IsActive { get; set; } = true;
+
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+
+        // YENİ
+        public string FatherName { get; set; } = string.Empty;
+
+        public DateTime? BirthDate { get; set; }
+        public string? PhoneNumber { get; set; }
+
+        // YENİ
+        public string? Country { get; set; }
+
+        public string? PhotoUrl { get; set; }
+        public string? Details { get; set; }
     }
 }

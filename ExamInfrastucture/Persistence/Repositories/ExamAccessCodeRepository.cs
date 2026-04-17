@@ -57,6 +57,19 @@ namespace ExamInfrastucture.Persistence.Repositories
         }
 
         // Yeni access code əlavə edir
+        public async Task<List<ExamAccessCode>> GetUnusedByExamIdAsync(int examId, CancellationToken cancellationToken = default)
+        {
+            return await _context.ExamAccessCodes
+                .Where(x => x.ExamId == examId && !x.IsUsed)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<ExamAccessCode>> GetExpiringCodesAsync(DateTime now, CancellationToken cancellationToken = default)
+        {
+            return await _context.ExamAccessCodes
+                .Where(x => !x.IsUsed && x.ExpireAt <= now)
+                .ToListAsync(cancellationToken);
+        }
         public async Task AddAsync(ExamAccessCode examAccessCode, CancellationToken cancellationToken = default)
         {
             await _context.ExamAccessCodes.AddAsync(examAccessCode, cancellationToken);

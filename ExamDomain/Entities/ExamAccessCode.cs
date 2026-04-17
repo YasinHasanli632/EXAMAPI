@@ -18,7 +18,11 @@ namespace ExamDomain.Entities
         public bool IsUsed { get; set; } // Kod istifadə olunub ya yox
 
         public DateTime ExpireAt { get; set; } // Kodun bitmə vaxtı
+                                               // YENI
+        public DateTime GeneratedAt { get; set; }
 
+        // YENI
+        public DateTime? UsedAt { get; set; }
         public Exam Exam { get; set; } = null!; // Kodun bağlı olduğu imtahan
         public Student Student { get; set; } = null!; // Kodun bağlı olduğu tələbə
 

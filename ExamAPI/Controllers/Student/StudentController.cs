@@ -12,244 +12,128 @@ namespace ExamAPI.Controllers.Student
     [Authorize]
     public class StudentController : ControllerBase
     {
-        private readonly IStudentService _studentService;
+        private readonly IStudentAdminService _studentAdminService;
 
-        public StudentController(IStudentService studentService)
+        public StudentController(IStudentAdminService studentAdminService)
         {
-            _studentService = studentService;
+            _studentAdminService = studentAdminService;
         }
 
-        // Login olmuş student-in profil məlumatlarını qaytarır.
-        [HttpGet("profile")]
-        public async Task<IActionResult> GetProfile(CancellationToken cancellationToken)
+        // Admin panel üçün bütün student-ləri gətirir
+        [HttpGet]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-
-                var response = await _studentService.GetStudentProfileAsync(userId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _studentAdminService.GetAllAsync(cancellationToken);
+            return Ok(result);
         }
 
-        // Login olmuş student-in qoşulduğu sinifləri qaytarır.
-        [HttpGet("classes")]
-        public async Task<IActionResult> GetClasses(CancellationToken cancellationToken)
+        // Id-yə görə student detail gətirir
+        [HttpGet("{id:int}")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetById([FromRoute] int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-
-                var response = await _studentService.GetStudentClassesAsync(userId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _studentAdminService.GetByIdAsync(id, cancellationToken);
+            return Ok(result);
         }
 
-        // Login olmuş student üçün əlçatan imtahanları qaytarır.
-        [HttpGet("exams")]
-        public async Task<IActionResult> GetAvailableExams(CancellationToken cancellationToken)
+        // Yeni student yaradır
+        [HttpPost]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> Create([FromBody] CreateStudentDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-
-                var response = await _studentService.GetAvailableExamsAsync(userId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _studentAdminService.CreateAsync(request, cancellationToken);
+            return Ok(result);
         }
 
-        // Login olmuş student üçün konkret imtahanın detail məlumatını qaytarır.
-        [HttpGet("exams/{examId:int}")]
-        public async Task<IActionResult> GetExamDetail(
-            [FromRoute] int examId,
-            CancellationToken cancellationToken)
+        // Mövcud student-i yeniləyir
+        [HttpPut("{id:int}")]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> Update([FromRoute] int id, [FromBody] UpdateStudentDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-
-                var response = await _studentService.GetExamDetailAsync(userId, examId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            request.Id = id;
+            var result = await _studentAdminService.UpdateAsync(request, cancellationToken);
+            return Ok(result);
         }
 
-        // Login olmuş student üçün imtahan sessiyası başladır.
-        [HttpPost("exams/start")]
-        public async Task<IActionResult> StartExam(
-            [FromBody] StartStudentExamRequestDto request,
-            CancellationToken cancellationToken)
+        [HttpDelete("{id:int}")]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> Delete([FromRoute] int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                request.UserId = GetCurrentUserId();
-
-                var response = await _studentService.StartExamAsync(request, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            await _studentAdminService.DeleteAsync(id, cancellationToken);
+            return Ok(new { message = "Şagird uğurla deaktiv edildi." });
         }
 
-        // Student-in suala verdiyi cavabı save edir və ya update edir.
-        [HttpPost("answers/save")]
-        public async Task<IActionResult> SaveAnswer(
-            [FromBody] SaveStudentAnswerRequestDto request,
-            CancellationToken cancellationToken)
+        // Dropdown/select üçün student option-larını gətirir
+        [HttpGet("options")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetOptions(CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _studentService.SaveAnswerAsync(request, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _studentAdminService.GetOptionsAsync(cancellationToken);
+            return Ok(result);
         }
 
-        // Verilən student exam session-a aid bütün cavabları qaytarır.
-        [HttpGet("sessions/{studentExamId:int}/answers")]
-        public async Task<IActionResult> GetExamAnswers(
-            [FromRoute] int studentExamId,
-            CancellationToken cancellationToken)
+        // Axtarışlı student option endpoint-i
+        [HttpGet("search")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> Search([FromQuery] string? search, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _studentService.GetExamAnswersAsync(studentExamId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _studentAdminService.SearchAsync(search, cancellationToken);
+            return Ok(result);
+        }
+        [HttpGet("{id:int}/tasks")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetTasks([FromRoute] int id, CancellationToken cancellationToken)
+        {
+            var result = await _studentAdminService.GetTasksAsync(id, cancellationToken);
+            return Ok(result);
         }
 
-        // Student imtahanı submit edir.
-        [HttpPost("exams/submit")]
-        public async Task<IActionResult> SubmitExam(
-            [FromBody] SubmitStudentExamRequestDto request,
-            CancellationToken cancellationToken)
+        [HttpPost("{id:int}/tasks")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> CreateTask([FromRoute] int id, [FromBody] CreateStudentTaskDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _studentService.SubmitExamAsync(request, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _studentAdminService.CreateTaskAsync(id, request, cancellationToken);
+            return Ok(result);
         }
 
-        // Login olmuş student-in imtahan tarixçəsini qaytarır.
-        [HttpGet("history")]
-        public async Task<IActionResult> GetExamHistory(CancellationToken cancellationToken)
+        [HttpPut("{id:int}/tasks/{taskId:int}")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> UpdateTask([FromRoute] int id, [FromRoute] int taskId, [FromBody] UpdateStudentTaskDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-
-                var response = await _studentService.GetExamHistoryAsync(userId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            request.Id = taskId;
+            var result = await _studentAdminService.UpdateTaskAsync(id, request, cancellationToken);
+            return Ok(result);
         }
 
-        // Login olmuş student üçün konkret imtahan nəticəsini qaytarır.
-        [HttpGet("results/{studentExamId:int}")]
-        public async Task<IActionResult> GetExamResult(
-            [FromRoute] int studentExamId,
-            CancellationToken cancellationToken)
+        [HttpDelete("{id:int}/tasks/{taskId:int}")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> DeleteTask([FromRoute] int id, [FromRoute] int taskId, CancellationToken cancellationToken)
         {
-            try
-            {
-                var userId = GetCurrentUserId();
-
-                var response = await _studentService.GetExamResultAsync(userId, studentExamId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            await _studentAdminService.DeleteTaskAsync(id, taskId, cancellationToken);
+            return Ok(new { message = "Task uğurla silindi." });
         }
 
-        // Token içindən cari login olmuş istifadəçinin Id dəyərini çıxarır.
-        private int GetCurrentUserId()
+        [HttpGet("{id:int}/exam-reviews/{studentExamId:int}")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetExamReview([FromRoute] int id, [FromRoute] int studentExamId, CancellationToken cancellationToken)
         {
-            var userIdValue =
-                User.FindFirstValue(ClaimTypes.NameIdentifier) ??
-                User.FindFirstValue("nameid") ??
-                User.FindFirstValue("sub");
+            var result = await _studentAdminService.GetExamReviewAsync(id, studentExamId, cancellationToken);
+            return Ok(result);
+        }
 
-            if (string.IsNullOrWhiteSpace(userIdValue))
-                throw new Exception("Token içində istifadəçi identifikatoru tapılmadı");
+        [HttpPut("{id:int}/attendance/{attendanceSessionId:int}")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> UpdateAttendance(
+    [FromRoute] int id,
+    [FromRoute] int attendanceSessionId,
+    [FromBody] UpdateStudentAttendanceRecordDto request,
+    CancellationToken cancellationToken)
+        {
+            request.AttendanceSessionId = attendanceSessionId;
 
-            if (!int.TryParse(userIdValue, out var userId))
-                throw new Exception("Token içində istifadəçi identifikatoru düzgün formatda deyil");
-
-            return userId;
+            var result = await _studentAdminService.UpdateAttendanceAsync(id, request, cancellationToken);
+            return Ok(result);
         }
     }
 }

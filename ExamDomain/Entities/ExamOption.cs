@@ -16,5 +16,12 @@ namespace ExamDomain.Entities
         public bool IsCorrect { get; set; } // Bu variant doğru cavabdır ya yox
 
         public ExamQuestion ExamQuestion { get; set; } = null!; // Navigation property
+
+        // YENI
+        // Frontenddə A/B/C/D label rahatlığı üçün
+        public string? OptionKey { get; set; }
+
+        // YENI
+        public int OrderNumber { get; set; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using ExamApplication.DTO.User;
+﻿using ExamApplication.DTO.Notification;
+using ExamApplication.DTO.User;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
@@ -6,75 +7,62 @@ using ExamDomain.Enum;
 
 namespace ExamApplication.Services
 {
-    /// <summary>
-    /// Sistem daxilində user account-larının idarə olunmasına cavabdeh olan servisdir.
-    /// SuperAdmin, Admin, Teacher və Student rollarına aid əsas hesab əməliyyatları burada idarə olunur.
-    /// </summary>
     public class UserService : IUserService
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IPasswordHasher _passwordHasher;
-
+        private readonly INotificationService _notificationService; // YENI
         public UserService(
             IUnitOfWork unitOfWork,
-            IPasswordHasher passwordHasher)
+            IPasswordHasher passwordHasher,INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _passwordHasher = passwordHasher;
+            _notificationService = notificationService;
         }
 
-        /// <summary>
-        /// Yeni user yaradır.
-        /// Bu metod əsas account məlumatlarını yaradır və rolu təyin edir.
-        /// Teacher və Student profil hissəsi ayrıca servis tərəfindən tamamlana bilər.
-        /// </summary>
-        /// <param name="request">Yeni user yaratmaq üçün göndərilən məlumatlar</param>
-        /// <param name="cancellationToken">Async əməliyyatı dayandırmaq üçün token</param>
-        /// <returns>Yaradılmış user-in detail məlumatları</returns>
         public async Task<UserDetailDto> CreateAsync(
-            CreateUserRequestDto request,
-            CancellationToken cancellationToken = default)
+      CreateUserRequestDto request,
+      CancellationToken cancellationToken = default)
         {
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            if (string.IsNullOrWhiteSpace(request.Username))
-                throw new Exception("Username boş ola bilməz.");
+            ValidateCreateRequest(request);
 
-            if (string.IsNullOrWhiteSpace(request.Email))
-                throw new Exception("Email boş ola bilməz.");
-
-            if (string.IsNullOrWhiteSpace(request.Password))
-                throw new Exception("Şifrə boş ola bilməz.");
-
-            if (string.IsNullOrWhiteSpace(request.Role))
-                throw new Exception("Rol boş ola bilməz.");
-
-            var normalizedUsername = request.Username.Trim();
-            var normalizedEmail = request.Email.Trim().ToLower();
+            var normalizedUsername = NormalizeUsername(request.Username);
+            var normalizedEmail = NormalizeEmail(request.Email);
             var parsedRole = ParseUserRole(request.Role);
 
-            var usernameExists = await _unitOfWork.Users.ExistsByUsernameAsync(
-                normalizedUsername,
-                cancellationToken);
-
-            if (usernameExists)
-                throw new Exception("Bu username artıq mövcuddur.");
-
-            var emailExists = await _unitOfWork.Users.ExistsByEmailAsync(
-                normalizedEmail,
-                cancellationToken);
-
-            if (emailExists)
-                throw new Exception("Bu email artıq mövcuddur.");
+            await EnsureUsernameUniqueAsync(normalizedUsername, null, cancellationToken);
+            await EnsureEmailUniqueAsync(normalizedEmail, null, cancellationToken);
 
             var user = new User
             {
                 Username = normalizedUsername,
                 Email = normalizedEmail,
-                PasswordHash = _passwordHasher.Hash(request.Password),
+                PasswordHash = _passwordHasher.Hash(request.Password.Trim()),
+
+                // YENI - ilk girişdə şifrə dəyişmə məcburi olsun
+                MustChangePassword = true,
+
                 Role = parsedRole,
-                IsActive = request.IsActive
+                IsActive = request.IsActive,
+                FirstName = request.FirstName?.Trim() ?? string.Empty,
+                LastName = request.LastName?.Trim() ?? string.Empty,
+                FatherName = request.FatherName?.Trim() ?? string.Empty,
+                BirthDate = request.BirthDate,
+                PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim(),
+                Country = string.IsNullOrWhiteSpace(request.Country) ? null : request.Country.Trim(),
+                PhotoUrl = string.IsNullOrWhiteSpace(request.PhotoUrl) ? null : request.PhotoUrl.Trim(),
+                Details = string.IsNullOrWhiteSpace(request.Details) ? null : request.Details.Trim(),
+
+                // YENI - forgot password üçün başlanğıc dəyərlər
+                PasswordResetOtp = null,
+                PasswordResetOtpExpiresAt = null,
+                PasswordResetOtpUsed = false,
+                PasswordResetOtpAttemptCount = 0,
+                PasswordResetRequestedAt = null
             };
 
             await _unitOfWork.Users.AddAsync(user, cancellationToken);
@@ -88,12 +76,6 @@ namespace ExamApplication.Services
             return MapToDetailDto(createdUser);
         }
 
-        /// <summary>
-        /// Sistemdə olan bütün user-ləri qaytarır.
-        /// Admin paneldə ümumi user siyahısını göstərmək üçün istifadə olunur.
-        /// </summary>
-        /// <param name="cancellationToken">Async əməliyyatı dayandırmaq üçün token</param>
-        /// <returns>User siyahısı</returns>
         public async Task<List<UserListItemDto>> GetAllAsync(
             CancellationToken cancellationToken = default)
         {
@@ -106,13 +88,6 @@ namespace ExamApplication.Services
                 .ToList();
         }
 
-        /// <summary>
-        /// Verilmiş role-a uyğun olan user-ləri qaytarır.
-        /// Məsələn yalnız SuperAdmin, yalnız Admin, yalnız Teacher və ya yalnız Student user-ləri filtr etmək üçün istifadə olunur.
-        /// </summary>
-        /// <param name="role">Filter üçün role adı</param>
-        /// <param name="cancellationToken">Async əməliyyatı dayandırmaq üçün token</param>
-        /// <returns>Verilmiş role-a uyğun user siyahısı</returns>
         public async Task<List<UserListItemDto>> GetByRoleAsync(
             string role,
             CancellationToken cancellationToken = default)
@@ -121,7 +96,6 @@ namespace ExamApplication.Services
                 throw new Exception("Rol boş ola bilməz.");
 
             var parsedRole = ParseUserRole(role);
-
             var users = await _unitOfWork.Users.GetAllAsync(cancellationToken);
 
             return users
@@ -131,12 +105,6 @@ namespace ExamApplication.Services
                 .ToList();
         }
 
-        /// <summary>
-        /// Verilmiş Id-yə görə user-in detail məlumatını qaytarır.
-        /// </summary>
-        /// <param name="userId">Axtarılan user-in Id-si</param>
-        /// <param name="cancellationToken">Async əməliyyatı dayandırmaq üçün token</param>
-        /// <returns>User detail məlumatı</returns>
         public async Task<UserDetailDto> GetByIdAsync(
             int userId,
             CancellationToken cancellationToken = default)
@@ -152,13 +120,6 @@ namespace ExamApplication.Services
             return MapToDetailDto(user);
         }
 
-        /// <summary>
-        /// Mövcud user-in əsas hesab məlumatlarını yeniləyir.
-        /// Username, email və role burada dəyişdirilə bilər.
-        /// </summary>
-        /// <param name="request">Yenilənəcək user məlumatları</param>
-        /// <param name="cancellationToken">Async əməliyyatı dayandırmaq üçün token</param>
-        /// <returns>Yenilənmiş user detail məlumatı</returns>
         public async Task<UserDetailDto> UpdateAsync(
             UpdateUserRequestDto request,
             CancellationToken cancellationToken = default)
@@ -166,46 +127,31 @@ namespace ExamApplication.Services
             if (request == null)
                 throw new ArgumentNullException(nameof(request));
 
-            if (request.UserId <= 0)
-                throw new Exception("User Id düzgün deyil.");
-
-            if (string.IsNullOrWhiteSpace(request.Username))
-                throw new Exception("Username boş ola bilməz.");
-
-            if (string.IsNullOrWhiteSpace(request.Email))
-                throw new Exception("Email boş ola bilməz.");
-
-            if (string.IsNullOrWhiteSpace(request.Role))
-                throw new Exception("Rol boş ola bilməz.");
+            ValidateUpdateRequest(request);
 
             var user = await _unitOfWork.Users.GetByIdAsync(request.UserId, cancellationToken);
 
             if (user == null)
                 throw new Exception("İstifadəçi tapılmadı.");
 
-            var normalizedUsername = request.Username.Trim();
-            var normalizedEmail = request.Email.Trim().ToLower();
+            var normalizedUsername = NormalizeUsername(request.Username);
+            var normalizedEmail = NormalizeEmail(request.Email);
             var parsedRole = ParseUserRole(request.Role);
 
-            var allUsers = await _unitOfWork.Users.GetAllAsync(cancellationToken);
-
-            var usernameExistsOnAnotherUser = allUsers.Any(x =>
-                x.Id != request.UserId &&
-                x.Username.ToLower() == normalizedUsername.ToLower());
-
-            if (usernameExistsOnAnotherUser)
-                throw new Exception("Bu username artıq başqa istifadəçi tərəfindən istifadə olunur.");
-
-            var emailExistsOnAnotherUser = allUsers.Any(x =>
-                x.Id != request.UserId &&
-                x.Email.ToLower() == normalizedEmail.ToLower());
-
-            if (emailExistsOnAnotherUser)
-                throw new Exception("Bu email artıq başqa istifadəçi tərəfindən istifadə olunur.");
+            await EnsureUsernameUniqueAsync(normalizedUsername, request.UserId, cancellationToken);
+            await EnsureEmailUniqueAsync(normalizedEmail, request.UserId, cancellationToken);
 
             user.Username = normalizedUsername;
             user.Email = normalizedEmail;
             user.Role = parsedRole;
+            user.FirstName = request.FirstName?.Trim() ?? string.Empty;
+            user.LastName = request.LastName?.Trim() ?? string.Empty;
+            user.FatherName = request.FatherName?.Trim() ?? string.Empty;
+            user.BirthDate = request.BirthDate;
+            user.PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim();
+            user.Country = string.IsNullOrWhiteSpace(request.Country) ? null : request.Country.Trim();
+            user.PhotoUrl = string.IsNullOrWhiteSpace(request.PhotoUrl) ? null : request.PhotoUrl.Trim();
+            user.Details = string.IsNullOrWhiteSpace(request.Details) ? null : request.Details.Trim();
 
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
@@ -218,14 +164,10 @@ namespace ExamApplication.Services
             return MapToDetailDto(updatedUser);
         }
 
-        /// <summary>
-        /// User-in aktiv/passiv statusunu dəyişir.
-        /// Bu metod soft delete və ya user bloklama məqsədi ilə istifadə oluna bilər.
-        /// </summary>
-        /// <param name="request">Status dəyişmə məlumatları</param>
-        /// <param name="cancellationToken">Async əməliyyatı dayandırmaq üçün token</param>
         public async Task ChangeStatusAsync(
             ChangeUserStatusRequestDto request,
+            int currentUserId,
+            string currentUserRole,
             CancellationToken cancellationToken = default)
         {
             if (request == null)
@@ -234,24 +176,44 @@ namespace ExamApplication.Services
             if (request.UserId <= 0)
                 throw new Exception("User Id düzgün deyil.");
 
+            if (!string.Equals(currentUserRole, "IsSuperAdmin", StringComparison.OrdinalIgnoreCase))
+                throw new Exception("Yalnız SuperAdmin istifadəçi statusunu dəyişə bilər.");
+
             var user = await _unitOfWork.Users.GetByIdAsync(request.UserId, cancellationToken);
 
             if (user == null)
                 throw new Exception("İstifadəçi tapılmadı.");
 
+            if (user.Role == UserRole.IsSuperAdmin)
+                throw new Exception("SuperAdmin istifadəçisini deaktiv etmək olmaz.");
+
+            if (user.Id == currentUserId)
+                throw new Exception("Öz hesabınızı deaktiv etmək olmaz.");
+
             user.IsActive = request.IsActive;
 
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
+            // YENI - notify user about status change
+            await _notificationService.CreateAsync(new CreateNotificationDto
+            {
+                UserId = user.Id,
+                Title = "Hesab statusunuz dəyişdirildi",
+                Message = request.IsActive
+                    ? "Hesabınız aktiv edildi."
+                    : "Hesabınız deaktiv edildi.",
+                Type = (int)NotificationType.User,
+                Category = (int)NotificationCategory.UserStatusChanged,
+                Priority = (int)NotificationPriority.High,
+                RelatedEntityType = "User",
+                RelatedEntityId = user.Id,
+                ActionUrl = "/profile",
+                Icon = "user-status",
+                MetadataJson = $@"{{""userId"":{user.Id},""isActive"":{request.IsActive.ToString().ToLower()}}}",
+                ExpiresAt = DateTime.UtcNow.AddDays(30)
+            }, cancellationToken);
         }
 
-        /// <summary>
-        /// Verilmiş Id-yə görə user-i sistemdən silir.
-        /// Real sistemdə bu əməliyyat çox vaxt soft delete və ya deactivate kimi implement olunur.
-        /// Burada təhlükəsiz yanaşma olaraq user passiv edilir.
-        /// </summary>
-        /// <param name="userId">Silinəcək user-in Id-si</param>
-        /// <param name="cancellationToken">Async əməliyyatı dayandırmaq üçün token</param>
         public async Task DeleteAsync(
             int userId,
             CancellationToken cancellationToken = default)
@@ -270,11 +232,76 @@ namespace ExamApplication.Services
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        /// <summary>
-        /// Verilmiş rol mətnini UserRole enum-na çevirir.
-        /// </summary>
-        /// <param name="role">Rol mətni</param>
-        /// <returns>UserRole enum dəyəri</returns>
+        private static void ValidateCreateRequest(CreateUserRequestDto request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Username))
+                throw new Exception("Username boş ola bilməz.");
+
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new Exception("Email boş ola bilməz.");
+
+            if (string.IsNullOrWhiteSpace(request.Password))
+                throw new Exception("Şifrə boş ola bilməz.");
+
+            if (string.IsNullOrWhiteSpace(request.Role))
+                throw new Exception("Rol boş ola bilməz.");
+        }
+
+        private static void ValidateUpdateRequest(UpdateUserRequestDto request)
+        {
+            if (request.UserId <= 0)
+                throw new Exception("User Id düzgün deyil.");
+
+            if (string.IsNullOrWhiteSpace(request.Username))
+                throw new Exception("Username boş ola bilməz.");
+
+            if (string.IsNullOrWhiteSpace(request.Email))
+                throw new Exception("Email boş ola bilməz.");
+
+            if (string.IsNullOrWhiteSpace(request.Role))
+                throw new Exception("Rol boş ola bilməz.");
+        }
+
+        private static string NormalizeUsername(string username)
+        {
+            return username.Trim();
+        }
+
+        private static string NormalizeEmail(string email)
+        {
+            return email.Trim().ToLowerInvariant();
+        }
+
+        private async Task EnsureUsernameUniqueAsync(
+            string username,
+            int? ignoreUserId,
+            CancellationToken cancellationToken)
+        {
+            var users = await _unitOfWork.Users.GetAllAsync(cancellationToken);
+
+            var exists = users.Any(x =>
+                x.Username.ToLower() == username.ToLower() &&
+                (!ignoreUserId.HasValue || x.Id != ignoreUserId.Value));
+
+            if (exists)
+                throw new Exception("Bu username artıq mövcuddur.");
+        }
+
+        private async Task EnsureEmailUniqueAsync(
+            string email,
+            int? ignoreUserId,
+            CancellationToken cancellationToken)
+        {
+            var users = await _unitOfWork.Users.GetAllAsync(cancellationToken);
+
+            var exists = users.Any(x =>
+                x.Email.ToLower() == email.ToLower() &&
+                (!ignoreUserId.HasValue || x.Id != ignoreUserId.Value));
+
+            if (exists)
+                throw new Exception("Bu email artıq mövcuddur.");
+        }
+
         private static UserRole ParseUserRole(string role)
         {
             if (Enum.TryParse<UserRole>(role, true, out var parsedRole))
@@ -283,11 +310,6 @@ namespace ExamApplication.Services
             throw new Exception("Göndərilən rol dəyəri düzgün deyil.");
         }
 
-        /// <summary>
-        /// User entity-ni siyahı üçün qısa dto modelinə çevirir.
-        /// </summary>
-        /// <param name="user">Çevriləcək user entity-si</param>
-        /// <returns>UserListItemDto</returns>
         private static UserListItemDto MapToListItemDto(User user)
         {
             return new UserListItemDto
@@ -297,16 +319,18 @@ namespace ExamApplication.Services
                 Email = user.Email,
                 Role = user.Role.ToString(),
                 IsActive = user.IsActive,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                FatherName = user.FatherName,
                 FullName = GetUserFullName(user),
+                Age = CalculateAge(user.BirthDate),
+                PhoneNumber = user.PhoneNumber,
+                Country = user.Country,
+                PhotoUrl = user.PhotoUrl,
                 CreatedAt = user.CreatedAt
             };
         }
 
-        /// <summary>
-        /// User entity-ni detail dto modelinə çevirir.
-        /// </summary>
-        /// <param name="user">Çevriləcək user entity-si</param>
-        /// <returns>UserDetailDto</returns>
         private static UserDetailDto MapToDetailDto(User user)
         {
             return new UserDetailDto
@@ -316,7 +340,16 @@ namespace ExamApplication.Services
                 Email = user.Email,
                 Role = user.Role.ToString(),
                 IsActive = user.IsActive,
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                FatherName = user.FatherName,
                 FullName = GetUserFullName(user),
+                BirthDate = user.BirthDate,
+                Age = CalculateAge(user.BirthDate),
+                PhoneNumber = user.PhoneNumber,
+                Country = user.Country,
+                PhotoUrl = user.PhotoUrl,
+                Details = user.Details,
                 TeacherId = user.Teacher?.Id,
                 StudentId = user.Student?.Id,
                 CreatedAt = user.CreatedAt,
@@ -324,15 +357,17 @@ namespace ExamApplication.Services
             };
         }
 
-        /// <summary>
-        /// User üçün göstəriləcək tam adı qaytarır.
-        /// Əgər student və ya teacher profili varsa oradan götürülür,
-        /// yoxdursa username qaytarılır.
-        /// </summary>
-        /// <param name="user">Tam adı tapılacaq user</param>
-        /// <returns>Display full name</returns>
         private static string GetUserFullName(User user)
         {
+            var fullName = string.Join(" ", new[]
+            {
+                user.FirstName?.Trim(),
+                user.LastName?.Trim()
+            }.Where(x => !string.IsNullOrWhiteSpace(x)));
+
+            if (!string.IsNullOrWhiteSpace(fullName))
+                return fullName;
+
             if (user.Student != null && !string.IsNullOrWhiteSpace(user.Student.FullName))
                 return user.Student.FullName;
 
@@ -340,6 +375,20 @@ namespace ExamApplication.Services
                 return user.Teacher.FullName;
 
             return user.Username;
+        }
+
+        private static int? CalculateAge(DateTime? birthDate)
+        {
+            if (!birthDate.HasValue)
+                return null;
+
+            var today = DateTime.UtcNow.Date;
+            var age = today.Year - birthDate.Value.Year;
+
+            if (birthDate.Value.Date > today.AddYears(-age))
+                age--;
+
+            return age;
         }
     }
 }

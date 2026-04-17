@@ -6,34 +6,26 @@ using System.Threading.Tasks;
 
 namespace ExamApplication.DTO.User
 {
-    /// <summary>
-    /// Mövcud user-in əsas hesab məlumatlarını yeniləmək üçün istifadə olunan request modelidir.
-    /// </summary>
     public class UpdateUserRequestDto
     {
-        /// <summary>
-        /// Yenilənəcək user-in Id-si.
-        /// </summary>
         public int UserId { get; set; }
-
-        /// <summary>
-        /// Yeni username dəyəri.
-        /// Sistemdə başqa user tərəfindən istifadə olunmamalıdır.
-        /// </summary>
         public string Username { get; set; } = string.Empty;
-
-        /// <summary>
-        /// Yeni email ünvanı.
-        /// Sistemdə başqa user tərəfindən istifadə olunmamalıdır.
-        /// </summary>
         public string Email { get; set; } = string.Empty;
-
-        /// <summary>
-        /// User-in yeni rolu.
-        /// Məsələn: Admin, Teacher, Student.
-        /// </summary>
         public string Role { get; set; } = string.Empty;
 
-    
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
+
+        // YENİ
+        public string FatherName { get; set; } = string.Empty;
+
+        public DateTime? BirthDate { get; set; }
+        public string? PhoneNumber { get; set; }
+
+        // YENİ
+        public string? Country { get; set; }
+
+        public string? PhotoUrl { get; set; }
+        public string? Details { get; set; }
     }
 }

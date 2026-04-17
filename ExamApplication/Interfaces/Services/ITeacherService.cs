@@ -1,7 +1,9 @@
-﻿using ExamApplication.DTO.Teacher;
+﻿using ExamApplication.DTO.Class;
+using ExamApplication.DTO.Teacher;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -47,5 +49,41 @@ namespace ExamApplication.Interfaces.Services
 
         // Teacher-i silir
         Task DeleteAsync(int id, CancellationToken cancellationToken = default);
+
+        // YENI
+        // UserId ilə detail gətirmək frontend üçün rahat olur
+        Task<TeacherDetailsDto> GetDetailsByUserIdAsync(int userId, CancellationToken cancellationToken = default);
+
+        // YENI
+        // Admin paneldə siyahı üçün detail-lə list
+        Task<List<TeacherDetailsDto>> GetAllDetailsAsync(CancellationToken cancellationToken = default);
+
+        // YENI
+        // Status dəyişmək üçün
+        Task ChangeStatusAsync(ChangeTeacherStatusDto request, CancellationToken cancellationToken = default);
+
+        // YENI
+        // Mövcud assign/remove methodları qalır, amma full sync üçün bu daha rahatdır
+        Task SyncSubjectsAsync(SyncTeacherSubjectsDto request, CancellationToken cancellationToken = default);
+
+        // YENI
+        Task SyncClassRoomsAsync(SyncTeacherClassRoomsDto request, CancellationToken cancellationToken = default);
+
+        // YENI
+        Task<List<TeacherTaskDto>> GetTasksByTeacherIdAsync(int teacherId, CancellationToken cancellationToken = default);
+
+        // YENI
+        Task<TeacherOverviewStatsDto> GetOverviewStatsAsync(int teacherId, CancellationToken cancellationToken = default);
+        // YENI
+        Task<TeacherDetailsDto> GetMeAsync(CancellationToken cancellationToken = default);
+
+        // YENI
+        Task<TeacherDashboardDto> GetMyDashboardAsync(CancellationToken cancellationToken = default);
+
+        // YENI
+        Task<List<TeacherMyClassRoomListItemDto>> GetMyClassRoomsAsync(CancellationToken cancellationToken = default);
+
+        // YENI
+        Task<ClassDetailDto> GetMyClassRoomDetailsAsync(int classRoomId, CancellationToken cancellationToken = default);
     }
 }

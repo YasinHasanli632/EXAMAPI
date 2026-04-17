@@ -23,5 +23,15 @@ namespace ExamDomain.Entities
         public ICollection<ExamOption> Options { get; set; } = new List<ExamOption>(); // Test variantları
 
         public ICollection<StudentAnswer> StudentAnswers { get; set; } = new List<StudentAnswer>(); // Tələbələrin cavabları
+
+        // YENI
+        public int OrderNumber { get; set; }
+
+        // YENI
+        public string? Description { get; set; }
+
+        // YENI
+        // Closed question üçün lazımdır, Open üçün null qala bilər
+        public QuestionSelectionMode? SelectionMode { get; set; }
     }
 }

@@ -8,13 +8,13 @@ namespace ExamDomain.Enum
 {
     public enum ExamStatus
     {
-        Draft = 1, // İmtahan yaradılıb amma hələ aktiv edilməyib
+        Draft = 1, // İmtahan yaradılıb, amma hələ publish olunmayıb
 
-        Published = 2, // İmtahan yayımlanıb və tələbələr üçün görünür
+        Planned = 2, // İmtahan publish olunub, amma başlama vaxtı hələ gəlməyib
 
-        Active = 3, // Hal-hazırda keçirilən aktiv imtahan
+        Active = 3, // İmtahan hal-hazırda aktivdir və tələbələr daxil ola bilirlər
 
-        Completed = 4, // İmtahan tamamlanıb və bağlanıb
+        Completed = 4, // İmtahanın vaxtı bitib və imtahan tamamlanıb
 
         Cancelled = 5 // İmtahan ləğv edilib
     }

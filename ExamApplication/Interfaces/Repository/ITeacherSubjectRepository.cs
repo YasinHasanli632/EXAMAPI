@@ -24,5 +24,14 @@ namespace ExamApplication.Interfaces.Repository
         void Update(TeacherSubject teacherSubject);
 
         void Remove(TeacherSubject teacherSubject);
+
+        // YENI
+        Task<List<TeacherSubject>> GetByTeacherIdsAsync(List<int> teacherIds, CancellationToken cancellationToken = default);
+
+        // YENI
+        Task<List<TeacherSubject>> GetByTeacherIdWithTeacherAsync(int teacherId, CancellationToken cancellationToken = default);
+
+        // YENI
+        Task RemoveRangeAsync(List<TeacherSubject> teacherSubjects, CancellationToken cancellationToken = default);
     }
 }

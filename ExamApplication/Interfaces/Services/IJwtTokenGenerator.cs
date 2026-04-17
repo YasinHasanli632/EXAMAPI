@@ -1,7 +1,9 @@
-﻿using ExamDomain.ValueObjects;
+﻿using ExamApplication.DTO.Auth;
+using ExamDomain.ValueObjects;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -12,11 +14,29 @@ namespace ExamApplication.Interfaces.Services
     /// </summary>
     public interface IJwtTokenGenerator
     {
+        // YENI
         /// <summary>
-        /// Verilmiş istifadəçi məlumatlarına əsasən JWT token yaradır.
+        /// Verilmiş istifadəçi məlumatlarına əsasən JWT access token yaradır.
         /// </summary>
-        // <param name="userInfo">Token içində saxlanılacaq istifadəçi məlumatları</param>
-        /// <returns>JWT token string</returns>
-        string GenerateToken(JwtUserInfo userInfo);
+        AccessTokenResultDto GenerateAccessToken(JwtUserInfo userInfo);
+
+        // YENI
+        /// <summary>
+        /// Random refresh token string yaradır.
+        /// </summary>
+        string GenerateRefreshToken();
+
+        // YENI
+        /// <summary>
+        /// Expired access token içindən claim-ləri çıxarmaq üçün istifadə olunur.
+        /// Refresh endpoint-də lazımdır.
+        /// </summary>
+        ClaimsPrincipal GetPrincipalFromExpiredToken(string accessToken);
+
+        // YENI
+        /// <summary>
+        /// Refresh token expiry tarixi qaytarır.
+        /// </summary>
+        DateTime GetRefreshTokenExpiresAtUtc();
     }
 }

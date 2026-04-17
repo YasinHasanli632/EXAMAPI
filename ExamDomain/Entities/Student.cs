@@ -1,4 +1,5 @@
 ﻿using ExamDomain.Common;
+using ExamDomain.Enum;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -23,5 +24,18 @@ namespace ExamDomain.Entities
 
         public ICollection<StudentExam> StudentExams { get; set; } = new List<StudentExam>(); // Tələbənin girdiyi imtahanlar
         public ICollection<ExamAccessCode> ExamAccessCodes { get; set; } = new List<ExamAccessCode>();
+
+        // YENI
+        // Frontend student status üçün lazımdır
+        public StudentStatus Status { get; set; } = StudentStatus.Active;
+
+        // YENI
+        // Student detail səhifəsində "details" üçün lazımdır
+        public string? Notes { get; set; }
+
+        // YENI
+        // Attendance modulu üçün indidən relation
+        public ICollection<StudentTask> Tasks { get; set; } = new List<StudentTask>(); // YENI
+        public ICollection<AttendanceRecord> AttendanceRecords { get; set; } = new List<AttendanceRecord>();
     }
 }

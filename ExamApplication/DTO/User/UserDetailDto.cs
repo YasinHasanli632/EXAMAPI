@@ -6,61 +6,36 @@ using System.Threading.Tasks;
 
 namespace ExamApplication.DTO.User
 {
-    /// <summary>
-    /// User detail səhifəsində göstəriləcək geniş user məlumat modelidir.
-    /// </summary>
     public class UserDetailDto
     {
-        /// <summary>
-        /// User-in unikal Id-si.
-        /// </summary>
         public int UserId { get; set; }
-
-        /// <summary>
-        /// İstifadəçinin username-i.
-        /// </summary>
         public string Username { get; set; } = string.Empty;
-
-        /// <summary>
-        /// İstifadəçinin email ünvanı.
-        /// </summary>
         public string Email { get; set; } = string.Empty;
-
-        /// <summary>
-        /// İstifadəçinin rolu.
-        /// </summary>
         public string Role { get; set; } = string.Empty;
-
-        /// <summary>
-        /// İstifadəçinin aktiv olub-olmadığını göstərir.
-        /// </summary>
         public bool IsActive { get; set; }
 
-       
+        public string FirstName { get; set; } = string.Empty;
+        public string LastName { get; set; } = string.Empty;
 
-        /// <summary>
-        /// User-ə bağlı profil varsa tam adı.
-        /// </summary>
+        // YENİ
+        public string FatherName { get; set; } = string.Empty;
+
         public string FullName { get; set; } = string.Empty;
+        public DateTime? BirthDate { get; set; }
+        public int? Age { get; set; }
+        public string? PhoneNumber { get; set; }
 
-        /// <summary>
-        /// Əgər user teacher profilinə bağlıdırsa, teacher profil Id-si.
-        /// </summary>
+        // YENİ
+        public string? Country { get; set; }
+
+        public string? PhotoUrl { get; set; }
+        public string? Details { get; set; }
+
         public int? TeacherId { get; set; }
-
-        /// <summary>
-        /// Əgər user student profilinə bağlıdırsa, student profil Id-si.
-        /// </summary>
         public int? StudentId { get; set; }
 
-        /// <summary>
-        /// User-in yaradılma tarixi.
-        /// </summary>
         public DateTime CreatedAt { get; set; }
-
-        /// <summary>
-        /// User-in son yenilənmə tarixi.
-        /// </summary>
         public DateTime? UpdatedAt { get; set; }
     }
 }
+

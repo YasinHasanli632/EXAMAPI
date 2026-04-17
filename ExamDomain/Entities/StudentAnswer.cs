@@ -13,7 +13,7 @@ namespace ExamDomain.Entities
 
         public int ExamQuestionId { get; set; } // Hansı suala cavab verilib
 
-        public int? SelectedOptionId { get; set; } // Seçilmiş variant (test sual üçün)
+        public int? SelectedOptionId { get; set; } // Single choice üçün saxlanıla bilər
 
         public string? AnswerText { get; set; } // Açıq sual üçün yazılan cavab
 
@@ -24,5 +24,19 @@ namespace ExamDomain.Entities
         public ExamQuestion ExamQuestion { get; set; } = null!; // Navigation property
 
         public ExamOption? SelectedOption { get; set; } // Seçilmiş cavab variantı
+                                                        // YENI
+        public bool? IsCorrect { get; set; } // closed question auto-check nəticəsi
+        // YENI
+        // Multiple choice dəstəyi üçün
+        public ICollection<StudentAnswerOption> SelectedOptions { get; set; } = new List<StudentAnswerOption>();
+        // YENI
+        public DateTime? LastSavedAt { get; set; }
+        // YENI
+        public bool IsReviewed { get; set; } = false;
+
+        // YENI
+        public DateTime? ReviewedAt { get; set; }
+
+        public string? TeacherFeedback { get; set; } // YENI
     }
 }

@@ -8,14 +8,11 @@ namespace ExamDomain.Enum
 {
     public enum NotificationType
     {
-        NewExam = 1, // Yeni imtahan təyin edildiyi barədə bildiriş
-
-        ExamStarted = 2, // İmtahan başladığı barədə bildiriş
-
-        ExamFinished = 3, // İmtahanın bitdiyi barədə bildiriş
-
-        ResultPublished = 4, // Nəticələrin elan edildiyi barədə bildiriş
-
-        OpenQuestionReview = 5 // Müəllim üçün açıq sualların yoxlanmalı olduğu barədə bildiriş
+        System = 1,
+        Exam = 2,
+        Task = 3,
+        Attendance = 4,
+        User = 5,
+        Announcement = 6
     }
 }

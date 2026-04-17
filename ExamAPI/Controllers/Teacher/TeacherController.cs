@@ -18,290 +18,226 @@ namespace ExamAPI.Controllers.Teacher
             _teacherService = teacherService;
         }
 
-        // Yeni teacher yaradır.
+        // Yeni teacher yaradır
         [HttpPost]
-        public async Task<IActionResult> Create(
-            [FromBody] CreateTeacherDto request,
-            CancellationToken cancellationToken)
+        [Authorize(Roles = "IsSuperAdmin")]
+        public async Task<IActionResult> Create([FromBody] CreateTeacherDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _teacherService.CreateAsync(request, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _teacherService.CreateAsync(request, cancellationToken);
+            return Ok(result);
         }
 
-        // Mövcud teacher məlumatlarını yeniləyir.
+        // Mövcud teacher-i yeniləyir
         [HttpPut]
-        public async Task<IActionResult> Update(
-            [FromBody] UpdateTeacherDto request,
-            CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> Update([FromBody] UpdateTeacherDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _teacherService.UpdateAsync(request, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _teacherService.UpdateAsync(request, cancellationToken);
+            return Ok(result);
         }
 
-        // Id-yə görə teacher qaytarır.
+        // Id-yə görə teacher gətirir
         [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(
-            [FromRoute] int id,
-            CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetById(int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _teacherService.GetByIdAsync(id, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _teacherService.GetByIdAsync(id, cancellationToken);
+            return Ok(result);
         }
 
-        // UserId-yə görə teacher qaytarır.
-        [HttpGet("by-user/{userId:int}")]
-        public async Task<IActionResult> GetByUserId(
-            [FromRoute] int userId,
-            CancellationToken cancellationToken)
+        // UserId-yə görə teacher gətirir
+        [HttpGet("user/{userId:int}")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetByUserId(int userId, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _teacherService.GetByUserIdAsync(userId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _teacherService.GetByUserIdAsync(userId, cancellationToken);
+            return Ok(result);
         }
 
-        // Id-yə görə teacher detail məlumatlarını qaytarır.
+        // Id-yə görə teacher detail gətirir
         [HttpGet("{id:int}/details")]
-        public async Task<IActionResult> GetDetailsById(
-            [FromRoute] int id,
-            CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetDetailsById(int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _teacherService.GetDetailsByIdAsync(id, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _teacherService.GetDetailsByIdAsync(id, cancellationToken);
+            return Ok(result);
         }
 
-        // Bütün teacher-ləri qaytarır.
+        // YENI
+        // UserId-yə görə teacher detail gətirir
+        [HttpGet("user/{userId:int}/details")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetDetailsByUserId(int userId, CancellationToken cancellationToken)
+        {
+            var result = await _teacherService.GetDetailsByUserIdAsync(userId, cancellationToken);
+            return Ok(result);
+        }
+
+        // Bütün teacher-ləri gətirir
         [HttpGet]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
         public async Task<IActionResult> GetAll(CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _teacherService.GetAllAsync(cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _teacherService.GetAllAsync(cancellationToken);
+            return Ok(result);
         }
 
-        // Teacher-ə subject təyin edir.
+        // YENI
+        // Bütün teacher-ləri detail ilə gətirir
+        [HttpGet("details")]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> GetAllDetails(CancellationToken cancellationToken)
+        {
+            var result = await _teacherService.GetAllDetailsAsync(cancellationToken);
+            return Ok(result);
+        }
+
+        // Teacher-ə subject bağlayır
         [HttpPost("assign-subject")]
-        public async Task<IActionResult> AssignSubject(
-            [FromBody] AssignSubjectToTeacherDto request,
-            CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> AssignSubject([FromBody] AssignSubjectToTeacherDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await _teacherService.AssignSubjectAsync(request, cancellationToken);
-
-                return Ok(new
-                {
-                    message = "Fənn müəllimə uğurla təyin olundu"
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            await _teacherService.AssignSubjectAsync(request, cancellationToken);
+            return Ok(new { message = "Subject teacher-ə uğurla bağlandı." });
         }
 
-        // Teacher-dən subject çıxarır.
-        [HttpPost("remove-subject")]
-        public async Task<IActionResult> RemoveSubject(
-            [FromBody] RemoveSubjectFromTeacherDto request,
-            CancellationToken cancellationToken)
+        // Teacher-dən subject çıxarır
+        [HttpDelete("remove-subject")]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> RemoveSubject([FromBody] RemoveSubjectFromTeacherDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await _teacherService.RemoveSubjectAsync(request, cancellationToken);
-
-                return Ok(new
-                {
-                    message = "Fənn müəllimdən uğurla çıxarıldı"
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            await _teacherService.RemoveSubjectAsync(request, cancellationToken);
+            return Ok(new { message = "Subject teacher-dən uğurla çıxarıldı." });
         }
 
-        // Teacher-ə class room təyin edir.
+        // Teacher-ə class bağlayır
         [HttpPost("assign-classroom")]
-        public async Task<IActionResult> AssignClassRoom(
-            [FromBody] AssignClassRoomToTeacherDto request,
-            CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> AssignClassRoom([FromBody] AssignClassRoomToTeacherDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await _teacherService.AssignClassRoomAsync(request, cancellationToken);
-
-                return Ok(new
-                {
-                    message = "Sinif müəllimə uğurla təyin olundu"
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            await _teacherService.AssignClassRoomAsync(request, cancellationToken);
+            return Ok(new { message = "ClassRoom teacher-ə uğurla bağlandı." });
         }
 
-        // Teacher-dən class room çıxarır.
-        [HttpPost("remove-classroom")]
-        public async Task<IActionResult> RemoveClassRoom(
-            [FromBody] RemoveClassRoomFromTeacherDto request,
-            CancellationToken cancellationToken)
+        // Teacher-dən class çıxarır
+        [HttpDelete("remove-classroom")]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> RemoveClassRoom([FromBody] RemoveClassRoomFromTeacherDto request, CancellationToken cancellationToken)
         {
-            try
-            {
-                await _teacherService.RemoveClassRoomAsync(request, cancellationToken);
-
-                return Ok(new
-                {
-                    message = "Sinif müəllimdən uğurla çıxarıldı"
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+            await _teacherService.RemoveClassRoomAsync(request, cancellationToken);
+            return Ok(new { message = "ClassRoom teacher-dən uğurla çıxarıldı." });
         }
 
-        // Teacher-in bütün subject-lərini qaytarır.
+        // Teacher-in bütün subject-lərini gətirir
         [HttpGet("{teacherId:int}/subjects")]
-        public async Task<IActionResult> GetSubjectsByTeacherId(
-            [FromRoute] int teacherId,
-            CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetSubjectsByTeacherId(int teacherId, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _teacherService.GetSubjectsByTeacherIdAsync(teacherId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _teacherService.GetSubjectsByTeacherIdAsync(teacherId, cancellationToken);
+            return Ok(result);
         }
 
-        // Teacher-in bütün class room-larını qaytarır.
+        // Teacher-in bütün class-larını gətirir
         [HttpGet("{teacherId:int}/classrooms")]
-        public async Task<IActionResult> GetClassRoomsByTeacherId(
-            [FromRoute] int teacherId,
-            CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetClassRoomsByTeacherId(int teacherId, CancellationToken cancellationToken)
         {
-            try
-            {
-                var response = await _teacherService.GetClassRoomsByTeacherIdAsync(teacherId, cancellationToken);
-
-                return Ok(response);
-            }
-            catch (Exception ex)
-            {
-                return NotFound(new
-                {
-                    message = ex.Message
-                });
-            }
+            var result = await _teacherService.GetClassRoomsByTeacherIdAsync(teacherId, cancellationToken);
+            return Ok(result);
         }
 
-        // Teacher-i silir.
+        // Teacher-i silir
         [HttpDelete("{id:int}")]
-        public async Task<IActionResult> Delete(
-            [FromRoute] int id,
-            CancellationToken cancellationToken)
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
         {
-            try
-            {
-                await _teacherService.DeleteAsync(id, cancellationToken);
+            await _teacherService.DeleteAsync(id, cancellationToken);
+            return Ok(new { message = "Teacher uğurla silindi." });
+        }
 
-                return Ok(new
-                {
-                    message = "Müəllim uğurla silindi"
-                });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new
-                {
-                    message = ex.Message
-                });
-            }
+        // YENI
+        // Teacher status dəyişir
+        [HttpPatch("change-status")]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> ChangeStatus([FromBody] ChangeTeacherStatusDto request, CancellationToken cancellationToken)
+        {
+            await _teacherService.ChangeStatusAsync(request, cancellationToken);
+            return Ok(new { message = "Teacher status uğurla yeniləndi." });
+        }
+
+        // YENI
+        // Teacher subject-lərini full sync edir
+        [HttpPut("sync-subjects")]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> SyncSubjects([FromBody] SyncTeacherSubjectsDto request, CancellationToken cancellationToken)
+        {
+            await _teacherService.SyncSubjectsAsync(request, cancellationToken);
+            return Ok(new { message = "Teacher subject-ləri uğurla sinxronlaşdırıldı." });
+        }
+
+        // YENI
+        // Teacher class-room assignment-lərini full sync edir
+        [HttpPut("sync-classrooms")]
+        [Authorize(Roles = "Admin,IsSuperAdmin")]
+        public async Task<IActionResult> SyncClassRooms([FromBody] SyncTeacherClassRoomsDto request, CancellationToken cancellationToken)
+        {
+            await _teacherService.SyncClassRoomsAsync(request, cancellationToken);
+            return Ok(new { message = "Teacher class-room assignment-ləri uğurla sinxronlaşdırıldı." });
+        }
+
+        // YENI
+        // Teacher task-larını gətirir
+        [HttpGet("{teacherId:int}/tasks")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetTasksByTeacherId(int teacherId, CancellationToken cancellationToken)
+        {
+            var result = await _teacherService.GetTasksByTeacherIdAsync(teacherId, cancellationToken);
+            return Ok(result);
+        }
+
+        // YENI
+        // Teacher overview stats gətirir
+        [HttpGet("{teacherId:int}/overview-stats")]
+        [Authorize(Roles = "Admin,IsSuperAdmin,Teacher")]
+        public async Task<IActionResult> GetOverviewStats(int teacherId, CancellationToken cancellationToken)
+        {
+            var result = await _teacherService.GetOverviewStatsAsync(teacherId, cancellationToken);
+            return Ok(result);
+        }
+        // YENI
+        [HttpGet("me")]
+        [Authorize(Roles = "Teacher")]
+        public async Task<IActionResult> GetMe(CancellationToken cancellationToken)
+        {
+            var result = await _teacherService.GetMeAsync(cancellationToken);
+            return Ok(result);
+        }
+
+        // YENI
+        [HttpGet("me/dashboard")]
+        [Authorize(Roles = "Teacher")]
+        public async Task<IActionResult> GetMyDashboard(CancellationToken cancellationToken)
+        {
+            var result = await _teacherService.GetMyDashboardAsync(cancellationToken);
+            return Ok(result);
+        }
+
+        // YENI
+        [HttpGet("me/classrooms")]
+        [Authorize(Roles = "Teacher")]
+        public async Task<IActionResult> GetMyClassRooms(CancellationToken cancellationToken)
+        {
+            var result = await _teacherService.GetMyClassRoomsAsync(cancellationToken);
+            return Ok(result);
+        }
+
+        // YENI
+        [HttpGet("me/classrooms/{classRoomId:int}/details")]
+        [Authorize(Roles = "Teacher")]
+        public async Task<IActionResult> GetMyClassRoomDetails(int classRoomId, CancellationToken cancellationToken)
+        {
+            var result = await _teacherService.GetMyClassRoomDetailsAsync(classRoomId, cancellationToken);
+            return Ok(result);
         }
     }
 }

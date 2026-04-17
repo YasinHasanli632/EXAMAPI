@@ -81,5 +81,39 @@ namespace ExamInfrastucture.Persistence.Repositories
         {
             _context.TeacherSubjects.Remove(teacherSubject);
         }
+
+        // YENI
+        public async Task<List<TeacherSubject>> GetByTeacherIdsAsync(List<int> teacherIds, CancellationToken cancellationToken = default)
+        {
+            if (teacherIds == null || teacherIds.Count == 0)
+                return new List<TeacherSubject>();
+
+            return await _context.TeacherSubjects
+                .Include(x => x.Subject)
+                .Include(x => x.Teacher)
+                .Where(x => teacherIds.Contains(x.TeacherId))
+                .OrderBy(x => x.TeacherId)
+                .ThenBy(x => x.Subject.Name)
+                .ToListAsync(cancellationToken);
+        }
+
+        // YENI
+        public async Task<List<TeacherSubject>> GetByTeacherIdWithTeacherAsync(int teacherId, CancellationToken cancellationToken = default)
+        {
+            return await _context.TeacherSubjects
+                .Include(x => x.Subject)
+                .Include(x => x.Teacher)
+                    .ThenInclude(x => x.User)
+                .Where(x => x.TeacherId == teacherId)
+                .OrderBy(x => x.Subject.Name)
+                .ToListAsync(cancellationToken);
+        }
+
+        // YENI
+        public Task RemoveRangeAsync(List<TeacherSubject> teacherSubjects, CancellationToken cancellationToken = default)
+        {
+            _context.TeacherSubjects.RemoveRange(teacherSubjects);
+            return Task.CompletedTask;
+        }
     }
 }

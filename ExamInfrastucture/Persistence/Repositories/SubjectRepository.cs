@@ -26,10 +26,33 @@ namespace ExamInfrastucture.Persistence.Repositories
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
+        // YENI
+        public async Task<Subject?> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _context.Subjects
+                .AsNoTracking()
+                .Include(x => x.TeacherSubjects)
+                    .ThenInclude(x => x.Teacher)
+                        .ThenInclude(x => x.User)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
         // Bütün fənləri gətirir
         public async Task<List<Subject>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _context.Subjects
+                .OrderBy(x => x.Name)
+                .ToListAsync(cancellationToken);
+        }
+
+        // YENI
+        public async Task<List<Subject>> GetAllWithDetailsAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.Subjects
+                .AsNoTracking()
+                .Include(x => x.TeacherSubjects)
+                    .ThenInclude(x => x.Teacher)
+                        .ThenInclude(x => x.User)
                 .OrderBy(x => x.Name)
                 .ToListAsync(cancellationToken);
         }
@@ -51,6 +74,13 @@ namespace ExamInfrastucture.Persistence.Repositories
                 .AnyAsync(x => x.Name == name, cancellationToken);
         }
 
+        // YENI
+        public async Task<bool> ExistsByCodeAsync(string code, CancellationToken cancellationToken = default)
+        {
+            return await _context.Subjects
+                .AnyAsync(x => x.Code != null && x.Code == code, cancellationToken);
+        }
+
         // Yeni fənn əlavə edir
         public async Task AddAsync(Subject subject, CancellationToken cancellationToken = default)
         {
@@ -67,6 +97,18 @@ namespace ExamInfrastucture.Persistence.Repositories
         public void Remove(Subject subject)
         {
             _context.Subjects.Remove(subject);
+        }
+
+        // YENI
+        public async Task<List<Subject>> GetByIdsAsync(List<int> subjectIds, CancellationToken cancellationToken = default)
+        {
+            if (subjectIds == null || subjectIds.Count == 0)
+                return new List<Subject>();
+
+            return await _context.Subjects
+                .Where(x => subjectIds.Contains(x.Id))
+                .OrderBy(x => x.Name)
+                .ToListAsync(cancellationToken);
         }
     }
 }

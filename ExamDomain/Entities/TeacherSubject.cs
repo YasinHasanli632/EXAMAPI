@@ -16,5 +16,9 @@ namespace ExamDomain.Entities
         public Teacher Teacher { get; set; } = null!; // Navigation property
 
         public Subject Subject { get; set; } = null!; // Navigation property
+
+        // YENI
+        // Gələcəkdə deaktiv etmə üçün rahatdır. İstəyə bağlıdır, amma enterprise üçün yaxşıdır.
+        public bool IsActive { get; set; } = true;
     }
 }

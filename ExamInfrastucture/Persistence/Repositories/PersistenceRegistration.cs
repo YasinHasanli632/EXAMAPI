@@ -1,4 +1,5 @@
 ﻿using ExamApplication.Interfaces.Repository;
+using ExamApplication.Interfaces.Repository.ExamApplication.Interfaces.Repository;
 using ExamInfrastucture.DAL;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;

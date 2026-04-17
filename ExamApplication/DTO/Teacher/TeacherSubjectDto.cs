@@ -16,5 +16,11 @@ namespace ExamApplication.DTO.Teacher
 
         // Fənnin adı
         public string SubjectName { get; set; } = null!;
+
+        // YENI
+        public string? SubjectCode { get; set; }
+
+        // YENI
+        public bool IsActive { get; set; }
     }
 }

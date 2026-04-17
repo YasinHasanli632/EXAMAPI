@@ -14,7 +14,7 @@ namespace ExamApplication.Options
         /// <summary>
         /// Token imzalama üçün gizli açar.
         /// </summary>
-        public string SecretKey { get; set; } = string.Empty;
+        public string Key { get; set; } = string.Empty;
 
         /// <summary>
         /// Token issuer dəyəri.
@@ -27,8 +27,14 @@ namespace ExamApplication.Options
         public string Audience { get; set; } = string.Empty;
 
         /// <summary>
-        /// Token-in neçə dəqiqə aktiv qalacağını göstərir.
+        /// Access token-in neçə dəqiqə aktiv qalacağını göstərir.
         /// </summary>
         public int ExpirationMinutes { get; set; }
+
+        // YENI
+        /// <summary>
+        /// Refresh token-in neçə gün aktiv qalacağını göstərir.
+        /// </summary>
+        public int RefreshTokenExpirationDays { get; set; } = 7;
     }
 }

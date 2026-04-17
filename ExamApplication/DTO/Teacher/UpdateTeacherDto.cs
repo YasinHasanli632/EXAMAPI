@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ExamDomain.Enum;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -16,5 +17,12 @@ namespace ExamApplication.DTO.Teacher
 
         // Müəllimin bölməsi
         public string Department { get; set; } = null!;
+
+        // YENI
+        public string? Specialization { get; set; }
+
+        // YENI
+        public TeacherStatus? Status { get; set; }
+
     }
 }

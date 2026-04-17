@@ -13,5 +13,8 @@ namespace ExamApplication.DTO.Teacher
 
         // Sinfin Id-si
         public int ClassRoomId { get; set; }
+
+        // YENI
+        public int SubjectId { get; set; }
     }
 }

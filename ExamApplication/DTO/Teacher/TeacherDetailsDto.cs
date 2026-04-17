@@ -34,5 +34,45 @@ namespace ExamApplication.DTO.Teacher
 
         // Müəllimin yaratdığı imtahan sayı
         public int ExamCount { get; set; }
+
+        // YENI
+        public string FirstName { get; set; } = string.Empty;
+
+        // YENI
+        public string LastName { get; set; } = string.Empty;
+
+        // YENI
+        public string FatherName { get; set; } = string.Empty;
+
+        // YENI
+        public string? PhoneNumber { get; set; }
+
+        // YENI
+        public string? PhotoUrl { get; set; }
+
+        // YENI
+        public string? Country { get; set; }
+
+        // YENI
+        public DateTime? BirthDate { get; set; }
+
+        // YENI
+        public string? Details { get; set; }
+
+        // YENI
+        public string? Specialization { get; set; }
+
+        // YENI
+        public string? Status { get; set; }
+
+        // YENI
+        public bool IsActive { get; set; }
+
+        // YENI
+        public List<TeacherTaskDto> Tasks { get; set; } = new();
+
+        // YENI
+        // YENI
+        public TeacherOverviewStatsDto? OverviewStats { get; set; }
     }
 }

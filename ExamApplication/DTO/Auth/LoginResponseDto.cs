@@ -18,10 +18,23 @@ namespace ExamApplication.DTO.Auth
         public string AccessToken { get; set; } = string.Empty;
 
         /// <summary>
-        /// Token-in bitmə tarixini göstərir.
-        /// Frontend bu məlumatla session idarəsini daha rahat qura bilər.
+        /// Access token-in bitmə tarixini göstərir.
         /// </summary>
         public DateTime ExpiresAt { get; set; }
+
+        // YENI
+        /// <summary>
+        /// Access token bitəndə yenisini almaq üçün istifadə olunan refresh token.
+        /// </summary>
+        public string RefreshToken { get; set; } = string.Empty;
+
+        // YENI
+        /// <summary>
+        /// Refresh token-in bitmə tarixini göstərir.
+        /// </summary>
+        public DateTime RefreshTokenExpiresAt { get; set; }
+
+        public bool MustChangePassword { get; set; }
 
         /// <summary>
         /// Login olmuş istifadəçinin əsas məlumatları.

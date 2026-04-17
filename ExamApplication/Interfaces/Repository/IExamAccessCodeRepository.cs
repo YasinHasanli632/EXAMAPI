@@ -20,7 +20,11 @@ namespace ExamApplication.Interfaces.Repository
         Task<bool> ExistsAsync(int examId, int studentId, CancellationToken cancellationToken = default);
 
         Task AddAsync(ExamAccessCode examAccessCode, CancellationToken cancellationToken = default);
+        // YENI
+        Task<List<ExamAccessCode>> GetUnusedByExamIdAsync(int examId, CancellationToken cancellationToken = default);
 
+        // YENI
+        Task<List<ExamAccessCode>> GetExpiringCodesAsync(DateTime now, CancellationToken cancellationToken = default);
         void Update(ExamAccessCode examAccessCode);
 
         void Remove(ExamAccessCode examAccessCode);

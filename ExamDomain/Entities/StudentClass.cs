@@ -16,5 +16,14 @@ namespace ExamDomain.Entities
         public Student Student { get; set; } = null!; // Navigation property
 
         public ClassRoom ClassRoom { get; set; } = null!; // Navigation property
+
+        // YENI
+        public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
+
+        // YENI
+        public DateTime? LeftAt { get; set; }
+
+        // YENI
+        public bool IsActive { get; set; } = true;
     }
 }

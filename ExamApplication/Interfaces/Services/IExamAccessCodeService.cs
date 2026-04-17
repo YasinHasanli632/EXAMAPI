@@ -6,7 +6,14 @@ using System.Threading.Tasks;
 
 namespace ExamApplication.Interfaces.Services
 {
-    internal interface IExamAccessCodeService
+    public interface IExamAccessCodeService
     {
+        Task GenerateCodesForUpcomingExamsAsync(CancellationToken cancellationToken = default);
+
+        // YENI
+        Task EnsureStudentExamRecordsForPublishedExamAsync(int examId, CancellationToken cancellationToken = default);
+
+        // YENI
+        Task AutoCloseExpiredStudentExamsAsync(CancellationToken cancellationToken = default);
     }
 }

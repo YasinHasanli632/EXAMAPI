@@ -33,6 +33,40 @@ namespace ExamDomain.Entities
         public ICollection<StudentExam> StudentExams { get; set; } = new List<StudentExam>(); // Bu imtahana girən tələbələr
 
         public ICollection<ExamAccessCode> AccessCodes { get; set; } = new List<ExamAccessCode>();
-   
+
+        // YENI
+        // Class filter/detail üçün
+        public int? ClassRoomId { get; set; }
+
+        // YENI
+        public ClassRoom? ClassRoom { get; set; }
+
+        // YENI
+        public string? Description { get; set; }
+
+        // YENI
+        public decimal? TotalScore { get; set; }
+
+        // YENI
+        public bool IsPublished { get; set; } = false;
+
+        // YENI
+        // Frontend exam create üçün ayrıca lazımdır
+        public decimal? ClosedQuestionScore { get; set; }
+
+        // YENI
+        public int TotalQuestionCount { get; set; }
+
+        // YENI
+        public int OpenQuestionCount { get; set; }
+
+        // YENI
+        public int ClosedQuestionCount { get; set; }
+
+        // YENI
+        public string? Instructions { get; set; }
+
+        // YENI
+        public ExamType Type { get; set; } = ExamType.Unknown;
     }
 }

@@ -19,5 +19,14 @@ namespace ExamApplication.DTO.Teacher
 
         // Sinfin səviyyəsi
         public int Grade { get; set; }
+
+        // YENI
+        public int? SubjectId { get; set; }
+
+        // YENI
+        public string? SubjectName { get; set; }
+
+        // YENI
+        public bool IsActive { get; set; }
     }
 }

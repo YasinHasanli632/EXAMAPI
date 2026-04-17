@@ -6,28 +6,44 @@ using System.Threading.Tasks;
 
 namespace ExamApplication.DTO.Student
 {
-    // Student exam session məlumatını daşıyır.
     public class StudentExamSessionDto
     {
-        // StudentExam Id-si.
         public int StudentExamId { get; set; }
-
-        // Student Id-si.
-        public int StudentId { get; set; }
-
-        // Exam Id-si.
         public int ExamId { get; set; }
-
-        // Başlama vaxtı.
+        public string ExamTitle { get; set; } = string.Empty;
+        public string SubjectName { get; set; } = string.Empty;
         public DateTime StartTime { get; set; }
-
-        // Bitmə vaxtı.
         public DateTime? EndTime { get; set; }
-
-        // Session tamamlanıb ya yox.
         public bool IsCompleted { get; set; }
-
-        // Toplanmış bal.
         public decimal Score { get; set; }
+
+        // YENI
+        public bool IsReviewed { get; set; }
+
+        // YENI
+        public DateTime? SubmittedAt { get; set; }
+
+        // YENI
+        public int DurationMinutes { get; set; }
+        // YENI
+        public string Instructions { get; set; } = string.Empty;
+
+        // YENI
+        public string Status { get; set; } = string.Empty;
+
+        // YENI
+        public decimal TotalScore { get; set; }
+
+        // YENI
+        public int WarningCount { get; set; }
+
+        // YENI
+        public int TabSwitchCount { get; set; }
+
+        // YENI
+        public int FullScreenExitCount { get; set; }
+
+        // YENI
+        public List<StudentExamQuestionDto> Questions { get; set; } = new();
     }
 }

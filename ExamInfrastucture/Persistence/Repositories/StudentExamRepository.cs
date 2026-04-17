@@ -1,5 +1,7 @@
 ﻿using ExamApplication.Interfaces.Repository;
+using ExamApplication.Interfaces.Repository.ExamApplication.Interfaces.Repository;
 using ExamDomain.Entities;
+using ExamDomain.Enum;
 using ExamInfrastucture.DAL;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -24,6 +26,13 @@ namespace ExamInfrastucture.Persistence.Repositories
         {
             return await _context.StudentExams
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        // YENI
+        public async Task<StudentExam?> GetByIdAndStudentAsync(int id, int studentId, CancellationToken cancellationToken = default)
+        {
+            return await _context.StudentExams
+                .FirstOrDefaultAsync(x => x.Id == id && x.StudentId == studentId, cancellationToken);
         }
 
         // Id-yə görə student exam session-u cavabları ilə gətirir
@@ -83,6 +92,115 @@ namespace ExamInfrastucture.Persistence.Repositories
         {
             return await _context.StudentExams
                 .AnyAsync(x => x.StudentId == studentId && x.ExamId == examId, cancellationToken);
+        }
+
+        public async Task<StudentExam?> GetByIdWithFullDetailsAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _context.StudentExams
+                .Include(x => x.Student)
+                    .ThenInclude(x => x.User)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Subject)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Teacher)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Questions)
+                        .ThenInclude(q => q.Options)
+                .Include(x => x.Answers)
+                    .ThenInclude(x => x.ExamQuestion)
+                        .ThenInclude(q => q.Options)
+                .Include(x => x.Answers)
+                    .ThenInclude(x => x.SelectedOption)
+                .Include(x => x.Answers)
+                    .ThenInclude(x => x.SelectedOptions)
+                        .ThenInclude(x => x.ExamOption)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        // YENI
+        public async Task<StudentExam?> GetByIdAndStudentWithFullDetailsAsync(int id, int studentId, CancellationToken cancellationToken = default)
+        {
+            return await _context.StudentExams
+                .Include(x => x.Student)
+                    .ThenInclude(x => x.User)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Subject)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Teacher)
+                        .ThenInclude(x => x.User)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Questions)
+                        .ThenInclude(q => q.Options)
+                .Include(x => x.Answers)
+                    .ThenInclude(x => x.ExamQuestion)
+                        .ThenInclude(q => q.Options)
+                .Include(x => x.Answers)
+                    .ThenInclude(x => x.SelectedOption)
+                .Include(x => x.Answers)
+                    .ThenInclude(x => x.SelectedOptions)
+                        .ThenInclude(x => x.ExamOption)
+                .FirstOrDefaultAsync(x => x.Id == id && x.StudentId == studentId, cancellationToken);
+        }
+
+        // YENI
+        public async Task<List<StudentExam>> GetByStudentIdWithDetailsAsync(int studentId, CancellationToken cancellationToken = default)
+        {
+            return await _context.StudentExams
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Subject)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Teacher)
+                        .ThenInclude(x => x.User)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Questions)
+                .Where(x => x.StudentId == studentId)
+                .OrderByDescending(x => x.Exam.StartTime)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<StudentExam?> GetByStudentAndExamWithFullDetailsAsync(int studentId, int examId, CancellationToken cancellationToken = default)
+        {
+            return await _context.StudentExams
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Subject)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Teacher)
+                        .ThenInclude(x => x.User)
+                .Include(x => x.Exam)
+                    .ThenInclude(x => x.Questions)
+                        .ThenInclude(q => q.Options)
+                .Include(x => x.Answers)
+                    .ThenInclude(a => a.SelectedOptions)
+                .FirstOrDefaultAsync(x => x.StudentId == studentId && x.ExamId == examId, cancellationToken);
+        }
+
+        public async Task<List<StudentExam>> GetPendingByExamIdAsync(int examId, CancellationToken cancellationToken = default)
+        {
+            return await _context.StudentExams
+                .Where(x => x.ExamId == examId && !x.IsCompleted)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<StudentExam>> GetNotCompletedActiveSessionsAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.StudentExams
+                .Include(x => x.Exam)
+                .Where(x => !x.IsCompleted && x.Status == StudentExamStatus.InProgress)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<StudentExam>> GetCompletedByExamIdWithDetailsAsync(int examId, CancellationToken cancellationToken = default)
+        {
+            return await _context.StudentExams
+                .Include(x => x.Student)
+                    .ThenInclude(x => x.User)
+                .Include(x => x.Answers)
+                    .ThenInclude(x => x.ExamQuestion)
+                .Include(x => x.Answers)
+                    .ThenInclude(x => x.SelectedOptions)
+                .Where(x => x.ExamId == examId && x.IsCompleted)
+                .OrderByDescending(x => x.SubmittedAt ?? x.EndTime)
+                .ToListAsync(cancellationToken);
         }
 
         // Yeni student exam session-u əlavə edir

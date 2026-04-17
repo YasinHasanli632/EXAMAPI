@@ -2,11 +2,6 @@
 using ExamDomain.Entities;
 using ExamInfrastucture.DAL;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace ExamInfrastucture.Persistence.Repositories
 {
@@ -19,24 +14,48 @@ namespace ExamInfrastucture.Persistence.Repositories
             _context = context;
         }
 
-        // Id-yə görə sinif gətirir
         public async Task<ClassRoom?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.ClassRooms
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
-        // Id-yə görə sinifi tələbələri ilə birlikdə gətirir
         public async Task<ClassRoom?> GetByIdWithStudentsAsync(int id, CancellationToken cancellationToken = default)
         {
             return await _context.ClassRooms
-                .Include(x => x.StudentClasses)
+                .Include(x => x.StudentClasses.Where(sc => sc.IsActive))
                     .ThenInclude(x => x.Student)
                         .ThenInclude(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
         }
 
-        // Bütün sinifləri gətirir
+        public async Task<ClassRoom?> GetByIdWithTeacherAssignmentsAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _context.ClassRooms
+                .Include(x => x.ClassTeacherSubjects.Where(cts => cts.IsActive))
+                    .ThenInclude(x => x.Teacher)
+                        .ThenInclude(x => x.User)
+                .Include(x => x.ClassTeacherSubjects.Where(cts => cts.IsActive))
+                    .ThenInclude(x => x.Subject)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
+        public async Task<ClassRoom?> GetByIdWithDetailsAsync(int id, CancellationToken cancellationToken = default)
+        {
+            return await _context.ClassRooms
+                .Include(x => x.StudentClasses.Where(sc => sc.IsActive))
+                    .ThenInclude(x => x.Student)
+                        .ThenInclude(x => x.User)
+                .Include(x => x.ClassTeacherSubjects.Where(cts => cts.IsActive))
+                    .ThenInclude(x => x.Teacher)
+                        .ThenInclude(x => x.User)
+                .Include(x => x.ClassTeacherSubjects.Where(cts => cts.IsActive))
+                    .ThenInclude(x => x.Subject)
+                .Include(x => x.Exams)
+                    .ThenInclude(x => x.Subject)
+                .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+        }
+
         public async Task<List<ClassRoom>> GetAllAsync(CancellationToken cancellationToken = default)
         {
             return await _context.ClassRooms
@@ -45,29 +64,76 @@ namespace ExamInfrastucture.Persistence.Repositories
                 .ToListAsync(cancellationToken);
         }
 
-        // Sinif adının mövcud olub-olmadığını yoxlayır
+        public async Task<List<ClassRoom>> GetAllWithDetailsAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.ClassRooms
+                .Include(x => x.StudentClasses.Where(sc => sc.IsActive))
+                .Include(x => x.ClassTeacherSubjects.Where(cts => cts.IsActive))
+                    .ThenInclude(x => x.Teacher)
+                        .ThenInclude(x => x.User)
+                .Include(x => x.ClassTeacherSubjects.Where(cts => cts.IsActive))
+                    .ThenInclude(x => x.Subject)
+                .Include(x => x.Exams)
+                .OrderBy(x => x.Grade)
+                .ThenBy(x => x.Name)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<ClassRoom>> GetByAcademicYearAsync(string academicYear, CancellationToken cancellationToken = default)
+        {
+            return await _context.ClassRooms
+                .Where(x => x.AcademicYear == academicYear)
+                .OrderBy(x => x.Grade)
+                .ThenBy(x => x.Name)
+                .ToListAsync(cancellationToken);
+        }
+
+        public async Task<List<ClassRoom>> GetActiveAsync(CancellationToken cancellationToken = default)
+        {
+            return await _context.ClassRooms
+                .Where(x => x.IsActive)
+                .OrderBy(x => x.Grade)
+                .ThenBy(x => x.Name)
+                .ToListAsync(cancellationToken);
+        }
+
         public async Task<bool> ExistsByNameAsync(string name, CancellationToken cancellationToken = default)
         {
             return await _context.ClassRooms
                 .AnyAsync(x => x.Name == name, cancellationToken);
         }
 
-        // Yeni sinif əlavə edir
+        public async Task<bool> ExistsByNameAsync(string name, int excludeId, CancellationToken cancellationToken = default)
+        {
+            return await _context.ClassRooms
+                .AnyAsync(x => x.Name == name && x.Id != excludeId, cancellationToken);
+        }
+
         public async Task AddAsync(ClassRoom classRoom, CancellationToken cancellationToken = default)
         {
             await _context.ClassRooms.AddAsync(classRoom, cancellationToken);
         }
 
-        // Sinifi update üçün context-ə işarələyir
         public void Update(ClassRoom classRoom)
         {
             _context.ClassRooms.Update(classRoom);
         }
 
-        // Sinifi silmək üçün context-ə işarələyir
         public void Remove(ClassRoom classRoom)
         {
             _context.ClassRooms.Remove(classRoom);
+        }
+
+        public async Task<List<ClassRoom>> GetByIdsAsync(List<int> classRoomIds, CancellationToken cancellationToken = default)
+        {
+            if (classRoomIds == null || classRoomIds.Count == 0)
+                return new List<ClassRoom>();
+
+            return await _context.ClassRooms
+                .Where(x => classRoomIds.Contains(x.Id))
+                .OrderBy(x => x.Grade)
+                .ThenBy(x => x.Name)
+                .ToListAsync(cancellationToken);
         }
     }
 }

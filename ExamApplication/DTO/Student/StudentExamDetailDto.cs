@@ -6,45 +6,57 @@ using System.Threading.Tasks;
 
 namespace ExamApplication.DTO.Student
 {
-    // Student üçün exam detail ekranını daşıyır.
     public class StudentExamDetailDto
     {
-        // Exam Id-si.
         public int ExamId { get; set; }
-
-        // Exam başlığı.
-        public string Title { get; set; } = null!;
-
-        // Exam açıqlaması.
-
-        // Fənn adı.
-        public string SubjectName { get; set; } = null!;
-
-        // Exam başlama vaxtı.
-        public DateTime StartDate { get; set; }
-
-        // Exam bitmə vaxtı.
-        public DateTime EndDate { get; set; }
-
-        // Müddət dəqiqə ilə.
+        public int? StudentExamId { get; set; }
+        public string ExamTitle { get; set; } = string.Empty;
+        public string SubjectName { get; set; } = string.Empty;
+        public string TeacherName { get; set; } = string.Empty;
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
         public int DurationMinutes { get; set; }
-
-        // Toplam sual sayı.
-        public int TotalQuestionCount { get; set; }
-
-        // Toplam bal.
-        public decimal TotalPoints { get; set; }
-
-        // Student başlamışdır ya yox.
-        public bool HasStarted { get; set; }
-
-        // Student exam-i tamamlayıb ya yox.
+        public string Instructions { get; set; } = string.Empty;
+        public string Status { get; set; } = string.Empty;
+        public bool IsAccessCodeReady { get; set; }
+        public bool CanVerifyCode { get; set; }
+        public bool CanStart { get; set; }
         public bool IsCompleted { get; set; }
 
-        // Əgər session varsa onun Id-si.
-        public int? StudentExamId { get; set; }
+        // YENI
+        public string? AccessCode { get; set; }
 
-        // Studentə görünən suallar.
-        public List<StudentExamQuestionDto> Questions { get; set; } = new();
+
+
+        // YENI
+        public bool IsMissed { get; set; }
+
+        // YENI
+        public int AccessCodeActivationMinutes { get; set; }
+
+        // YENI
+        public int LateEntryToleranceMinutes { get; set; }
+
+        // YENI
+        public decimal Score { get; set; }
+
+        // YENI
+        public decimal? PublishedScore { get; set; }
+
+        // YENI
+        public bool RequiresManualReview { get; set; }
+
+        // YENI
+        public bool CanShowScoreImmediately { get; set; }
+
+        // YENI
+        public bool IsResultAutoPublished { get; set; }
+
+        // YENI
+        public bool HasOpenQuestions { get; set; }
+
+        // YENI
+        public string ResultMessage { get; set; } = string.Empty;
+
     }
 }
