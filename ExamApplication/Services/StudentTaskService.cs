@@ -1,5 +1,6 @@
 ﻿using ExamApplication.DTO.Notification;
 using ExamApplication.DTO.Student;
+using ExamApplication.Helper;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
@@ -200,8 +201,9 @@ namespace ExamApplication.Services
                               ?? ((task.Teacher?.User?.FirstName ?? "") + " " + (task.Teacher?.User?.LastName ?? "")).Trim(),
                 ClassRoomId = task.ClassRoomId,
                 ClassName = task.ClassRoom?.Name ?? string.Empty,
-                AssignedDate = task.AssignedDate,
-                DueDate = task.DueDate,
+                AssignedDate = AzerbaijanTimeHelper.ToBakuTime(task.AssignedDate),
+                DueDate = AzerbaijanTimeHelper.ToBakuTime(task.DueDate),
+                SubmittedAt = AzerbaijanTimeHelper.ToBakuTime(task.SubmittedAt),
                 Status = effectiveStatus.ToString(),
                 IsLate = effectiveStatus == StudentTaskStatus.Late,
                 CanSubmit = CanSubmit(task, effectiveStatus),
@@ -209,7 +211,7 @@ namespace ExamApplication.Services
                 IsReviewed = effectiveStatus == StudentTaskStatus.Reviewed,
                 Score = task.Score,
                 MaxScore = task.MaxScore,
-                SubmittedAt = task.SubmittedAt
+                
             };
         }
 
@@ -231,8 +233,10 @@ namespace ExamApplication.Services
                               ?? ((task.Teacher?.User?.FirstName ?? "") + " " + (task.Teacher?.User?.LastName ?? "")).Trim(),
                 ClassRoomId = task.ClassRoomId,
                 ClassName = task.ClassRoom?.Name ?? string.Empty,
-                AssignedDate = task.AssignedDate,
-                DueDate = task.DueDate,
+                AssignedDate = AzerbaijanTimeHelper.ToBakuTime(task.AssignedDate),
+                DueDate = AzerbaijanTimeHelper.ToBakuTime(task.DueDate),
+                SubmittedAt = AzerbaijanTimeHelper.ToBakuTime(task.SubmittedAt),
+                CheckedAt = AzerbaijanTimeHelper.ToBakuTime(task.CheckedAt),
                 Status = effectiveStatus.ToString(),
                 IsLate = effectiveStatus == StudentTaskStatus.Late,
                 CanSubmit = CanSubmit(task, effectiveStatus),
@@ -245,9 +249,7 @@ namespace ExamApplication.Services
                 SubmissionText = task.SubmissionText,
                 SubmissionLink = task.SubmissionLink,
                 SubmissionFileUrl = task.SubmissionFileUrl,
-                SubmittedAt = task.SubmittedAt,
                 Feedback = task.Feedback,
-                CheckedAt = task.CheckedAt
             };
         }
 

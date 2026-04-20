@@ -1,5 +1,6 @@
 ﻿using ExamApplication.DTO.Attendance;
 using ExamApplication.DTO.Notification;
+using ExamApplication.Helper;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
@@ -16,16 +17,12 @@ namespace ExamApplication.Services
         public AttendanceService(
      IUnitOfWork unitOfWork,
      ICurrentUserService currentUserService,
-     INotificationService notificationService) // YENI
+     INotificationService notificationService)
         {
             _unitOfWork = unitOfWork;
             _currentUserService = currentUserService;
-            _notificationService = notificationService; // YENI
+            _notificationService = notificationService;
         }
-
-        // =========================================================
-        // KOHNE METODLAR - HECH NE SILINMEDEN SAXLANILIB
-        // =========================================================
 
         public async Task<AttendanceSessionDetailDto> CreateAsync(
             CreateAttendanceSessionDto request,
@@ -62,7 +59,7 @@ namespace ExamApplication.Services
                     request.ClassRoomId,
                     request.SubjectId,
                     effectiveTeacherId,
-                    request.SessionDate,
+                    request.SessionDate.Date,
                     cancellationToken);
 
             if (existingSession is not null)
@@ -76,13 +73,10 @@ namespace ExamApplication.Services
                 SessionDate = request.SessionDate.Date,
                 Notes = request.Notes?.Trim(),
 
-                // YENI
                 StartTime = request.StartTime,
-                // YENI
                 EndTime = request.EndTime,
-                // YENI
                 SessionType = request.SessionType,
-                // YENI
+
                 IsLocked = false,
 
                 Records = request.Records
@@ -288,7 +282,7 @@ namespace ExamApplication.Services
                 result.Add(new AttendanceStudentHistoryDto
                 {
                     AttendanceSessionId = session.Id,
-                    SessionDate = session.SessionDate,
+                    SessionDate = AzerbaijanTimeHelper.ToBakuTime(session.SessionDate),
                     ClassName = session.ClassRoom?.Name ?? string.Empty,
                     SubjectName = session.Subject?.Name ?? string.Empty,
                     TeacherName = session.Teacher?.FullName ?? string.Empty,
@@ -681,7 +675,7 @@ namespace ExamApplication.Services
                     request.ClassRoomId,
                     request.SubjectId,
                     effectiveTeacherId,
-                    request.SessionDate,
+                    request.SessionDate.Date,
                     cancellationToken);
 
             if (existingSession is not null)
@@ -874,17 +868,22 @@ namespace ExamApplication.Services
                 .ToList();
 
             var sessionColumns = orderedSessions
-                .Select(x => new AttendanceSessionColumnDto
+                .Select(x =>
                 {
-                    SessionId = x.Id,
-                    SessionDate = x.SessionDate,
-                    SessionDateText = x.SessionDate.ToString("dd.MM.yyyy"),
-                    StartTimeText = FormatTime(x.StartTime),
-                    EndTimeText = FormatTime(x.EndTime),
-                    SessionType = MapAttendanceSessionTypeText(x.SessionType),
-                    IsExtraLesson = x.SessionType == AttendanceSessionType.ExtraLesson,
-                    IsLocked = x.IsLocked,
-                    Notes = x.Notes
+                    var bakuSessionDate = AzerbaijanTimeHelper.ToBakuTime(x.SessionDate);
+
+                    return new AttendanceSessionColumnDto
+                    {
+                        SessionId = x.Id,
+                        SessionDate = bakuSessionDate,
+                        SessionDateText = bakuSessionDate.ToString("dd.MM.yyyy"),
+                        StartTimeText = FormatTime(x.StartTime),
+                        EndTimeText = FormatTime(x.EndTime),
+                        SessionType = MapAttendanceSessionTypeText(x.SessionType),
+                        IsExtraLesson = x.SessionType == AttendanceSessionType.ExtraLesson,
+                        IsLocked = x.IsLocked,
+                        Notes = x.Notes
+                    };
                 })
                 .ToList();
 
@@ -1218,13 +1217,13 @@ namespace ExamApplication.Services
 
         private static void ValidateTodayOnly(DateTime sessionDate)
         {
-            if (sessionDate.Date != DateTime.UtcNow.Date)
+            if (sessionDate.Date != AzerbaijanTimeHelper.GetBakuToday())
                 throw new InvalidOperationException("Yalnız bugünkü tarix üçün davamiyyət yazmaq və redaktə etmək olar.");
         }
 
         private static void ValidatePastDateOnly(DateTime attendanceDate)
         {
-            if (attendanceDate.Date >= DateTime.UtcNow.Date)
+            if (attendanceDate.Date >= AzerbaijanTimeHelper.GetBakuToday())
                 throw new InvalidOperationException("Dəyişiklik sorğusu yalnız keçmiş tarixlər üçün yaradıla bilər.");
         }
 
@@ -1292,7 +1291,7 @@ namespace ExamApplication.Services
                 SubjectName = session.Subject?.Name ?? string.Empty,
                 TeacherId = session.TeacherId,
                 TeacherName = session.Teacher?.FullName ?? string.Empty,
-                SessionDate = session.SessionDate,
+                SessionDate = AzerbaijanTimeHelper.ToBakuTime(session.SessionDate),
                 StartTime = session.StartTime,
                 EndTime = session.EndTime,
                 Notes = session.Notes,
@@ -1316,7 +1315,7 @@ namespace ExamApplication.Services
                 SubjectName = session.Subject?.Name ?? string.Empty,
                 TeacherId = session.TeacherId,
                 TeacherName = session.Teacher?.FullName ?? string.Empty,
-                SessionDate = session.SessionDate,
+                SessionDate = AzerbaijanTimeHelper.ToBakuTime(session.SessionDate),
                 StartTime = session.StartTime,
                 EndTime = session.EndTime,
                 Notes = session.Notes,
@@ -1361,7 +1360,7 @@ namespace ExamApplication.Services
                 TeacherName = entity.Teacher?.FullName ?? string.Empty,
                 StudentId = entity.StudentId,
                 StudentFullName = entity.Student?.FullName ?? string.Empty,
-                AttendanceDate = entity.AttendanceDate,
+                AttendanceDate = AzerbaijanTimeHelper.ToBakuTime(entity.AttendanceDate),
                 CurrentStatus = MapAttendanceStatusText(entity.CurrentStatus),
                 RequestedStatus = MapAttendanceStatusText(entity.RequestedStatus),
                 RequestedChangeReason = entity.RequestedChangeReason,
@@ -1370,10 +1369,10 @@ namespace ExamApplication.Services
                 RequestedLateArrivalTime = FormatTime(entity.RequestedLateArrivalTime),
                 RequestedLateNote = entity.RequestedLateNote,
                 RequestedByTeacherId = entity.RequestedByTeacherId,
-                RequestedAt = entity.RequestedAt,
+                RequestedAt = AzerbaijanTimeHelper.ToBakuTime(entity.RequestedAt),
                 RequestStatus = entity.RequestStatus,
                 ReviewedByAdminId = entity.ReviewedByAdminId,
-                ReviewedAt = entity.ReviewedAt,
+                ReviewedAt = AzerbaijanTimeHelper.ToBakuTime(entity.ReviewedAt),
                 ReviewNote = entity.ReviewNote
             };
         }

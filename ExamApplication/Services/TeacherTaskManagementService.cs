@@ -1,6 +1,7 @@
 ﻿using ExamApplication.DTO.Notification;
 using ExamApplication.DTO.Teacher.Task;
 using ExamApplication.DTO.Teacher.Task.ExamApplication.DTO.Teacher.Tasks;
+using ExamApplication.Helper;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
@@ -189,8 +190,8 @@ namespace ExamApplication.Services
                 TaskGroupKey = taskGroupKey,
                 Title = request.Title.Trim(),
                 Description = request.Description?.Trim(),
-                AssignedDate = request.AssignedDate,
-                DueDate = request.DueDate,
+                AssignedDate = AzerbaijanTimeHelper.FromBakuToUtc(request.AssignedDate),
+                DueDate = AzerbaijanTimeHelper.FromBakuToUtc(request.DueDate),
                 Status = StudentTaskStatus.Pending,
                 Score = 0,
                 MaxScore = request.MaxScore,
@@ -258,8 +259,8 @@ namespace ExamApplication.Services
             {
                 task.Title = request.Title.Trim();
                 task.Description = request.Description?.Trim();
-                task.AssignedDate = request.AssignedDate;
-                task.DueDate = request.DueDate;
+                task.AssignedDate = AzerbaijanTimeHelper.FromBakuToUtc(request.AssignedDate);
+                task.DueDate = AzerbaijanTimeHelper.FromBakuToUtc(request.DueDate);
                 task.MaxScore = request.MaxScore;
                 task.Link = request.Link?.Trim();
                 task.Note = request.Note?.Trim();
@@ -408,7 +409,7 @@ namespace ExamApplication.Services
                 StudentNumber = task.Student?.StudentNumber ?? string.Empty,
                 PhotoUrl = task.Student?.User?.PhotoUrl,
                 SubmissionStatus = MapSubmissionStatus(task),
-                SubmittedAt = task.SubmittedAt,
+                SubmittedAt = AzerbaijanTimeHelper.ToBakuTime(task.SubmittedAt),
                 Score = task.Score,
                 MaxScore = task.MaxScore,
                 IsReviewed = task.Status == StudentTaskStatus.Reviewed
@@ -428,17 +429,19 @@ namespace ExamApplication.Services
                 TaskDescription = task.Description,
                 TaskLink = task.Link,
                 TaskNote = task.Note,
-                AssignedDate = task.AssignedDate,
-                DueDate = task.DueDate,
+                AssignedDate = AzerbaijanTimeHelper.ToBakuTime(task.AssignedDate),
+                DueDate = AzerbaijanTimeHelper.ToBakuTime(task.DueDate),
+                SubmittedAt = AzerbaijanTimeHelper.ToBakuTime(task.SubmittedAt),
+                CheckedAt = AzerbaijanTimeHelper.ToBakuTime(task.CheckedAt),
                 SubmissionStatus = MapSubmissionStatus(task),
                 SubmissionText = task.SubmissionText,
                 SubmissionLink = task.SubmissionLink,
                 SubmissionFileUrl = task.SubmissionFileUrl,
-                SubmittedAt = task.SubmittedAt,
+               
                 Score = task.Score,
                 MaxScore = task.MaxScore,
                 Feedback = task.Feedback,
-                CheckedAt = task.CheckedAt
+                
             };
         }
 

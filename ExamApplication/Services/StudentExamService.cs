@@ -1,9 +1,10 @@
-﻿using ExamApplication.DTO.Student;
+﻿using ExamApplication.DTO.Settings;
+using ExamApplication.DTO.Student;
+using ExamApplication.Helper;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
 using ExamDomain.Enum;
-using ExamApplication.DTO.Settings;
 
 namespace ExamApplication.Services
 {
@@ -62,14 +63,16 @@ namespace ExamApplication.Services
                     Score = studentExam.Score,
                     MaxScore = exam.TotalScore ?? exam.Questions.Sum(q => q.Points),
                     IsCompleted = studentExam.IsCompleted,
-                    StartTime = exam.StartTime,
-                    EndTime = exam.EndTime,
+                   
                     ExamType = exam.Type.ToString(),
                     Note = exam.Description,
                     Status = studentExam.Status.ToString(),
-                    ExamStartTime = exam.StartTime,
-                    ExamEndTime = exam.EndTime,
+                   
                     DurationMinutes = exam.DurationMinutes,
+                    StartTime = AzerbaijanTimeHelper.ToBakuTime(exam.StartTime),
+                    EndTime = AzerbaijanTimeHelper.ToBakuTime(exam.EndTime),
+                    ExamStartTime = AzerbaijanTimeHelper.ToBakuTime(exam.StartTime),
+                    ExamEndTime = AzerbaijanTimeHelper.ToBakuTime(exam.EndTime),
 
                     // YENI
                     IsAccessCodeReady = isAccessCodeReady,
@@ -165,8 +168,8 @@ namespace ExamApplication.Services
                 ExamTitle = exam.Title,
                 SubjectName = exam.Subject?.Name ?? string.Empty,
                 TeacherName = exam.Teacher?.User?.FullName ?? exam.Teacher?.FullName ?? string.Empty,
-                StartTime = exam.StartTime,
-                EndTime = exam.EndTime,
+                StartTime = AzerbaijanTimeHelper.ToBakuTime(exam.StartTime),
+                EndTime = AzerbaijanTimeHelper.ToBakuTime(exam.EndTime),
                 DurationMinutes = exam.DurationMinutes,
                 Instructions = exam.Instructions ?? exam.Description ?? string.Empty,
                 Status = studentExam.Status.ToString(),
@@ -193,7 +196,7 @@ namespace ExamApplication.Services
         // Layihədə exam vaxtları lokal vaxt kimi işlədiyi üçün local now istifadə edirik
         private static DateTime GetNow()
         {
-            return DateTime.Now;
+            return AzerbaijanTimeHelper.UtcNow;
         }
 
         // KOHNE QALIR
@@ -508,12 +511,13 @@ namespace ExamApplication.Services
                 ExamId = exam.Id,
                 ExamTitle = exam.Title,
                 SubjectName = exam.Subject?.Name ?? string.Empty,
-                StartTime = studentExam.StartTime,
-                EndTime = studentExam.EndTime,
+                StartTime = AzerbaijanTimeHelper.ToBakuTime(studentExam.StartTime),
+                EndTime = AzerbaijanTimeHelper.ToBakuTime(studentExam.EndTime),
+                SubmittedAt = AzerbaijanTimeHelper.ToBakuTime(studentExam.SubmittedAt),
                 IsCompleted = studentExam.IsCompleted,
                 Score = studentExam.Score,
                 IsReviewed = studentExam.IsReviewed,
-                SubmittedAt = studentExam.SubmittedAt,
+               
                 DurationMinutes = exam.DurationMinutes,
                 Instructions = exam.Instructions ?? exam.Description ?? string.Empty,
                 Status = studentExam.Status.ToString(),
@@ -808,8 +812,8 @@ namespace ExamApplication.Services
             {
                 StudentExamId = studentExam.Id,
                 ExamId = studentExam.ExamId,
-                StartTime = studentExam.StartTime,
-                EndTime = studentExam.EndTime ?? now,
+                StartTime = AzerbaijanTimeHelper.ToBakuTime(studentExam.StartTime),
+                EndTime = AzerbaijanTimeHelper.ToBakuTime(studentExam.EndTime ?? now),
                 IsCompleted = studentExam.IsCompleted,
 
                 // Sistem daxilində tam score saxlanır

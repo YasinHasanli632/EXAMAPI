@@ -1,4 +1,5 @@
 ﻿using ExamApplication.DTO.Student;
+using ExamApplication.Helper;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
@@ -217,7 +218,9 @@ namespace ExamApplication.Services
                     .Select(x => new StudentAttendanceSummaryDto
                     {
                         AttendanceSessionId = x.AttendanceSessionId,
-                        SessionDate = x.AttendanceSession?.SessionDate ?? DateTime.MinValue,
+                        SessionDate = x.AttendanceSession != null
+    ? AzerbaijanTimeHelper.ToBakuTime(x.AttendanceSession.SessionDate)
+    : DateTime.MinValue,
                         SubjectName = x.AttendanceSession?.Subject?.Name ?? string.Empty,
                         TeacherName = x.AttendanceSession?.Teacher?.FullName ?? string.Empty,
                         Status = MapAttendanceStatus(x.Status),
@@ -242,8 +245,8 @@ namespace ExamApplication.Services
                 Title = task.Title ?? string.Empty,
                 SubjectName = task.Subject?.Name ?? string.Empty,
                 TeacherName = task.Teacher?.FullName ?? string.Empty,
-                AssignedDate = task.AssignedDate,
-                DueDate = task.DueDate,
+                AssignedDate = AzerbaijanTimeHelper.ToBakuTime(task.AssignedDate),
+                DueDate = AzerbaijanTimeHelper.ToBakuTime(task.DueDate),
                 Status = MapTaskStatus(task.Status),
                 Score = task.Score,
                 MaxScore = task.MaxScore,

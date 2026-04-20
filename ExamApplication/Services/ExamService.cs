@@ -1,6 +1,7 @@
 ﻿using ExamApplication.DTO.Exam;
 using ExamApplication.DTO.Notification;
 using ExamApplication.DTO.Teacher;
+using ExamApplication.Helper;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
@@ -148,23 +149,23 @@ namespace ExamInfrastucture.Services
             await ValidateCreateOrUpdateAsync(request, null, cancellationToken);
 
             var questionPayload = request.Questions ?? new List<ExamQuestionDto>();
-
+            var startTimeUtc = AzerbaijanTimeHelper.FromBakuToUtc(request.StartTime);
+            var endTimeUtc = AzerbaijanTimeHelper.FromBakuToUtc(request.EndTime);
             var entity = new Exam
             {
                 Title = request.Title.Trim(),
                 SubjectId = request.SubjectId,
                 TeacherId = request.TeacherId,
                 ClassRoomId = request.ClassRoomId,
-                StartTime = request.StartTime,
-                EndTime = request.EndTime,
+                StartTime = startTimeUtc,
+                EndTime = endTimeUtc,
+                Status = ResolveExamStatus(request.IsPublished, startTimeUtc, endTimeUtc),
                 DurationMinutes = request.DurationMinutes,
                 Description = request.Description?.Trim(),
                 Instructions = request.Instructions?.Trim(),
                 IsPublished = request.IsPublished,
 
-                // YENI
-                // Publish və tarixə görə real status hesablanır
-                Status = ResolveExamStatus(request.IsPublished, request.StartTime, request.EndTime),
+               
 
                 TotalQuestionCount = questionPayload.Count,
                 OpenQuestionCount = questionPayload.Count(x => IsOpenQuestionType(x.Type)),
@@ -220,13 +221,14 @@ namespace ExamInfrastucture.Services
             var oldClassRoomId = exam.ClassRoomId;
             var oldStartTime = exam.StartTime;
             var oldEndTime = exam.EndTime;
-
+            var startTimeUtc = AzerbaijanTimeHelper.FromBakuToUtc(request.StartTime);
+            var endTimeUtc = AzerbaijanTimeHelper.FromBakuToUtc(request.EndTime);
             exam.Title = request.Title.Trim();
             exam.SubjectId = request.SubjectId;
             exam.TeacherId = request.TeacherId;
             exam.ClassRoomId = request.ClassRoomId;
-            exam.StartTime = request.StartTime;
-            exam.EndTime = request.EndTime;
+            exam.StartTime = startTimeUtc;
+            exam.EndTime = endTimeUtc;
             exam.DurationMinutes = request.DurationMinutes;
             exam.Description = request.Description?.Trim();
             exam.Instructions = request.Instructions?.Trim();
@@ -641,8 +643,8 @@ namespace ExamInfrastucture.Services
                 SubjectName = exam.Subject?.Name ?? string.Empty,
                 TeacherId = exam.TeacherId,
                 TeacherName = exam.Teacher?.FullName ?? string.Empty,
-                StartTime = exam.StartTime,
-                EndTime = exam.EndTime,
+                StartTime = AzerbaijanTimeHelper.ToBakuTime(exam.StartTime),
+                EndTime = AzerbaijanTimeHelper.ToBakuTime(exam.EndTime),
 
                 // YENI
                 // List cavabında həmişə real status qaytarırıq
@@ -782,8 +784,8 @@ namespace ExamInfrastucture.Services
                     StudentId = studentExam.StudentId,
                     StudentFullName = studentExam.Student?.FullName ?? "Naməlum",
                     StudentNumber = studentExam.Student?.StudentNumber ?? "",
-                    StartTime = studentExam.StartTime,
-                    SubmittedAt = studentExam.SubmittedAt,
+                    StartTime = AzerbaijanTimeHelper.ToBakuTime(studentExam.StartTime),
+                    SubmittedAt = AzerbaijanTimeHelper.ToBakuTime(studentExam.SubmittedAt),
                     IsCompleted = studentExam.IsCompleted,
                     IsReviewed = studentExam.IsReviewed,
                     Score = studentExam.Score,
@@ -829,8 +831,8 @@ namespace ExamInfrastucture.Services
                 StudentId = studentExam.StudentId,
                 StudentFullName = studentExam.Student?.FullName ?? "",
                 StudentNumber = studentExam.Student?.StudentNumber ?? "",
-                StartTime = studentExam.StartTime,
-                SubmittedAt = studentExam.SubmittedAt,
+                StartTime = AzerbaijanTimeHelper.ToBakuTime(studentExam.StartTime),
+                SubmittedAt = AzerbaijanTimeHelper.ToBakuTime(studentExam.SubmittedAt),
                 IsCompleted = studentExam.IsCompleted,
                 IsReviewed = studentExam.IsReviewed,
                 Score = studentExam.Score,
@@ -899,8 +901,8 @@ namespace ExamInfrastucture.Services
                 ClassName = exam.ClassRoom?.Name,
                 SubjectName = exam.Subject?.Name ?? string.Empty,
                 TeacherName = exam.Teacher?.FullName ?? string.Empty,
-                StartTime = exam.StartTime,
-                EndTime = exam.EndTime,
+                StartTime = AzerbaijanTimeHelper.ToBakuTime(exam.StartTime),
+                EndTime = AzerbaijanTimeHelper.ToBakuTime(exam.EndTime),
                 DurationMinutes = exam.DurationMinutes,
                 Description = exam.Description,
                 TotalScore = exam.TotalScore ?? questions.Sum(x => x.Points),
@@ -1008,8 +1010,7 @@ namespace ExamInfrastucture.Services
             // VACIB DÜZƏLİŞ:
             // StudentExamService DateTime.Now ilə işləyir.
             // Burada da eyni məntiq saxlanmalıdır ki, status fərqi yaranmasın.
-            var now = DateTime.Now;
-
+            var now = AzerbaijanTimeHelper.UtcNow;
             // Vaxt bitibsə completed
             if (endTime <= now)
                 return ExamStatus.Completed;

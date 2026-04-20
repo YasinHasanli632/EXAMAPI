@@ -1,4 +1,5 @@
 ﻿using ExamApplication.DTO.Student;
+using ExamApplication.Helper;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
@@ -313,7 +314,9 @@ namespace ExamInfrastucture.Services
             return new StudentAttendanceSummaryDto
             {
                 AttendanceSessionId = updatedRecord.AttendanceSessionId,
-                SessionDate = updatedRecord.AttendanceSession?.SessionDate ?? DateTime.MinValue,
+                SessionDate = updatedRecord.AttendanceSession != null
+    ? AzerbaijanTimeHelper.ToBakuTime(updatedRecord.AttendanceSession.SessionDate)
+    : DateTime.MinValue,
                 SubjectName = updatedRecord.AttendanceSession?.Subject?.Name ?? string.Empty,
                 TeacherName = updatedRecord.AttendanceSession?.Teacher?.FullName ?? string.Empty,
                 Status = MapAttendanceStatus(updatedRecord.Status),
@@ -438,7 +441,9 @@ namespace ExamInfrastucture.Services
                     .Select(x => new StudentAttendanceSummaryDto
                     {
                         AttendanceSessionId = x.AttendanceSessionId,
-                        SessionDate = x.AttendanceSession?.SessionDate ?? DateTime.MinValue,
+                        SessionDate = x.AttendanceSession != null
+    ? AzerbaijanTimeHelper.ToBakuTime(x.AttendanceSession.SessionDate)
+    : DateTime.MinValue,
                         SubjectName = x.AttendanceSession?.Subject?.Name ?? string.Empty,
                         TeacherName = x.AttendanceSession?.Teacher?.FullName ?? string.Empty,
                         Status = MapAttendanceStatus(x.Status),
@@ -589,8 +594,8 @@ namespace ExamInfrastucture.Services
                 Description = request.Description?.Trim(),
                 SubjectId = request.SubjectId,
                 TeacherId = request.TeacherId,
-                AssignedDate = request.AssignedDate,
-                DueDate = request.DueDate,
+                AssignedDate = AzerbaijanTimeHelper.FromBakuToUtc(request.AssignedDate),
+                DueDate = AzerbaijanTimeHelper.FromBakuToUtc(request.DueDate),
                 Status = (ExamDomain.Enum.StudentTaskStatus)request.Status,
                 Score = request.Score,
                 MaxScore = request.MaxScore,
@@ -633,8 +638,8 @@ namespace ExamInfrastucture.Services
             task.Description = request.Description?.Trim();
             task.SubjectId = request.SubjectId;
             task.TeacherId = request.TeacherId;
-            task.AssignedDate = request.AssignedDate;
-            task.DueDate = request.DueDate;
+            task.AssignedDate = AzerbaijanTimeHelper.FromBakuToUtc(request.AssignedDate);
+            task.DueDate = AzerbaijanTimeHelper.FromBakuToUtc(request.DueDate);
             task.Status = (ExamDomain.Enum.StudentTaskStatus)request.Status;
             task.Score = request.Score;
             task.MaxScore = request.MaxScore;
@@ -716,8 +721,8 @@ namespace ExamInfrastucture.Services
                 Title = task.Title,
                 SubjectName = task.Subject?.Name ?? string.Empty,
                 TeacherName = task.Teacher?.FullName ?? string.Empty,
-                AssignedDate = task.AssignedDate,
-                DueDate = task.DueDate,
+                AssignedDate = AzerbaijanTimeHelper.ToBakuTime(task.AssignedDate),
+                DueDate = AzerbaijanTimeHelper.ToBakuTime(task.DueDate),
                 Status = MapStudentTaskStatus(task.Status),
                 Score = task.Score,
                 MaxScore = task.MaxScore,
