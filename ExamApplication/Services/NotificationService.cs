@@ -1,4 +1,5 @@
 ﻿using ExamApplication.DTO.Notification;
+using ExamApplication.Helper;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
@@ -357,10 +358,8 @@ namespace ExamApplication.Services
                 Priority = notification.Priority.ToString(),
 
                 IsRead = notification.IsRead,
-                CreatedAt = notification.CreatedAt,
-
-                // YENI
-                ReadAt = notification.ReadAt,
+                CreatedAt = AzerbaijanTimeHelper.ToBakuTime(notification.CreatedAt),
+                ReadAt = AzerbaijanTimeHelper.ToBakuTime(notification.ReadAt),
 
                 RelatedEntityType = notification.RelatedEntityType,
                 RelatedEntityId = notification.RelatedEntityId,

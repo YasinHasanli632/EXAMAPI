@@ -1,4 +1,5 @@
 ﻿using ExamApplication.DTO.Teacher;
+using ExamApplication.Helper;
 using ExamApplication.Interfaces.Repository;
 using ExamApplication.Interfaces.Services;
 using ExamDomain.Entities;
@@ -749,7 +750,7 @@ namespace ExamApplication.Services
                     Id = x.Id,
                     Title = x.Title,
                     Description = x.Description,
-                    DueDate = x.DueDate,
+                    DueDate = AzerbaijanTimeHelper.ToBakuTime(x.DueDate),
                     Status = x.Status.ToString(),
                     IsCompleted = x.IsCompleted
                 })

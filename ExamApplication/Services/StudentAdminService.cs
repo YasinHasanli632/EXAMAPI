@@ -425,8 +425,8 @@ namespace ExamInfrastucture.Services
                         MaxScore = x.Exam?.TotalScore ?? 100,
 
                         IsCompleted = x.IsCompleted,
-                        StartTime = x.StartTime,
-                        EndTime = x.EndTime,
+                        StartTime = AzerbaijanTimeHelper.ToBakuTime(x.StartTime),
+                        EndTime = AzerbaijanTimeHelper.ToBakuTime(x.EndTime),
 
                         // YENI
                         ExamType = MapExamType(x.Exam?.Type),
