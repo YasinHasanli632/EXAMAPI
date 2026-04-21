@@ -209,7 +209,7 @@ namespace ExamApplication.Services
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        // Teacher-ə class bağlayır
+       
         public async Task AssignClassRoomAsync(AssignClassRoomToTeacherDto request, CancellationToken cancellationToken = default)
         {
             if (request == null)
@@ -261,7 +261,7 @@ namespace ExamApplication.Services
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        // Teacher-dən class çıxarır
+       
         public async Task RemoveClassRoomAsync(RemoveClassRoomFromTeacherDto request, CancellationToken cancellationToken = default)
         {
             if (request == null)
@@ -286,7 +286,7 @@ namespace ExamApplication.Services
             await _unitOfWork.SaveChangesAsync(cancellationToken);
         }
 
-        // Teacher-in bütün subject-lərini gətirir
+       
         public async Task<List<TeacherSubjectDto>> GetSubjectsByTeacherIdAsync(int teacherId, CancellationToken cancellationToken = default)
         {
             if (teacherId <= 0)
@@ -310,7 +310,7 @@ namespace ExamApplication.Services
                 })
                 .ToList();
         }
-        // YENI
+       
         public async Task<TeacherDetailsDto> GetMeAsync(CancellationToken cancellationToken = default)
         {
             var currentUser = _currentUserService.GetCurrentUser();
@@ -319,7 +319,7 @@ namespace ExamApplication.Services
 
             return await GetDetailsByUserIdAsync(currentUser.UserId, cancellationToken);
         }
-        // YENI
+        
         public async Task<TeacherDashboardDto> GetMyDashboardAsync(CancellationToken cancellationToken = default)
         {
             var currentUser = _currentUserService.GetCurrentUser();
@@ -413,14 +413,13 @@ namespace ExamApplication.Services
                 Classes = classes
             };
         }
-        // YENI
+       
         public async Task<List<TeacherMyClassRoomListItemDto>> GetMyClassRoomsAsync(CancellationToken cancellationToken = default)
         {
             var dashboard = await GetMyDashboardAsync(cancellationToken);
             return dashboard.Classes;
         }
-        // YENI
-        // YENI
+      
         public async Task<ExamApplication.DTO.Class.ClassDetailDto> GetMyClassRoomDetailsAsync(int classRoomId, CancellationToken cancellationToken = default)
         {
             var currentUser = _currentUserService.GetCurrentUser();
@@ -439,11 +438,10 @@ namespace ExamApplication.Services
             if (classRoom == null)
                 throw new KeyNotFoundException("Sinif tapılmadı.");
 
-            // Burada istəsən mövcud ClassRoomService mapping məntiqini ayrıca private helper-ə çıxarıb reuse et.
-            // Ən düzgün yol budur.
+           
             throw new NotImplementedException("Burada mövcud ClassRoomService detail mapping helper-i reuse olunmalıdır.");
         }
-        // Teacher-in bütün class-larını gətirir
+      
         public async Task<List<TeacherClassRoomDto>> GetClassRoomsByTeacherIdAsync(int teacherId, CancellationToken cancellationToken = default)
         {
             if (teacherId <= 0)
@@ -472,7 +470,7 @@ namespace ExamApplication.Services
                 .ToList();
         }
 
-        // Teacher-i silir
+       
         public async Task DeleteAsync(int id, CancellationToken cancellationToken = default)
         {
             if (id <= 0)
@@ -550,9 +548,7 @@ namespace ExamApplication.Services
                 var classAssignments = await _unitOfWork.ClassTeacherSubjects.GetByTeacherIdAsync(request.TeacherId, cancellationToken);
                 foreach (var item in classAssignments)
                 {
-                    // ayrıca IsActive field yoxdursa heç nə etmə
-                    // əgər entity-də IsActive varsa, aç bunu:
-                    // item.IsActive = false;
+                   
                 }
 
                 var teacherSubjects = await _unitOfWork.TeacherSubjects.GetByTeacherIdAsync(request.TeacherId, cancellationToken);

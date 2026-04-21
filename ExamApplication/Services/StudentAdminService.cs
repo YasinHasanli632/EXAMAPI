@@ -75,10 +75,27 @@ namespace ExamInfrastucture.Services
             student.FullName = request.FullName.Trim();
             student.DateOfBirth = request.DateOfBirth;
             student.StudentNumber = request.StudentNumber.Trim();
-            student.Status = request.Status.HasValue
-                ? (StudentStatus)request.Status.Value
-                : student.Status;
+
+            if (request.Status.HasValue)
+            {
+                student.Status = (StudentStatus)request.Status.Value;
+            }
+
             student.Notes = request.Notes?.Trim();
+
+            // YENI: Student statusuna gore User.IsActive sinxronlasdirilir
+            // Aktiv -> true
+            // Passiv / Məzun -> false
+            if (request.Status.HasValue)
+            {
+                var linkedUser = await _unitOfWork.Users.GetByIdAsync(student.UserId, cancellationToken);
+
+                if (linkedUser != null)
+                {
+                    linkedUser.IsActive = student.Status == StudentStatus.Active;
+                    _unitOfWork.Users.Update(linkedUser);
+                }
+            }
 
             _unitOfWork.Students.Update(student);
             await _unitOfWork.SaveChangesAsync(cancellationToken);

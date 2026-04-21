@@ -194,7 +194,7 @@ namespace ExamApplication.Services
 
             _unitOfWork.Users.Update(user);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
-            // YENI - notify user about status change
+            
             await _notificationService.CreateAsync(new CreateNotificationDto
             {
                 UserId = user.Id,
